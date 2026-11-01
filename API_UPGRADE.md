@@ -95,7 +95,7 @@ Initially 27 methods were missing: `answerChatJoinRequestQuery`,
 - The inventory reports no method, field, type, optionality, or union differences.
   Rust schema and RON method checks pass against the complete official snapshot.
 
-## Final validation
+## Initial upgrade validation
 
 - Stable and pinned-nightly workspace test suites each pass 369 tests with
   `full` (plus `nightly` on the nightly run). The six service-dependent tests
@@ -121,3 +121,23 @@ async-drop requirements for recursive `MessageKind`/`MessageCommon`.
 The dependency `proc-macro-error2` 2.0.1 emits an upstream future-compatibility
 warning about re-exporting private `proc_macro`; this is not a project warning.
 No newer crates.io release was available during the dependency audit.
+
+## Follow-up review of existing API support
+
+Comparison with the pre-upgrade validation schema identified changes to 23
+existing method schemas and 37 existing type definitions, covering added and
+removed fields, types, optionality, and union members. These changes are included
+alongside the newly added API methods and types. A fresh comparison with the
+official reference reports no remaining schema differences.
+
+Review of existing builders found that five `KeyboardMarkup` setters cleared
+the new `force_reply` flag. They now preserve it when chained after
+`.force_reply(true)`. A serialization regression reproduced the failure before
+the fix and passes afterward. Other changed struct-update builders were reviewed
+for the same problem.
+
+The follow-up stable workspace suite passes 370 tests, including the new
+regression and all schema checks. The six service-dependent tests are ignored in
+this run; their separate integration results are recorded above.
+Core all-targets Clippy with `full nightly` and `-D warnings`, formatting, and
+whitespace checks also pass.

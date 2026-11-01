@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed 
 
+- Preserve `force_reply` when chaining existing `KeyboardMarkup` builder methods.
 - Preserve multipart attachment identifiers through inline-result serialization
   and distinguish cloned uploads whose filenames change.
 - Decode updates from owned JSON values and grow the stack for nested messages.

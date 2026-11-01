@@ -104,21 +104,21 @@ impl KeyboardMarkup {
     ///
     /// [`is_persistent`]: KeyboardMarkup::is_persistent
     pub fn persistent(self) -> Self {
-        Self { force_reply: false, is_persistent: true, ..self }
+        Self { is_persistent: true, ..self }
     }
 
     /// Sets [`resize_keyboard`] to `true`.
     ///
     /// [`resize_keyboard`]: KeyboardMarkup::resize_keyboard
     pub fn resize_keyboard(self) -> Self {
-        Self { force_reply: false, resize_keyboard: true, ..self }
+        Self { resize_keyboard: true, ..self }
     }
 
     /// Sets [`one_time_keyboard`] to `true`.
     ///
     /// [`one_time_keyboard`]: KeyboardMarkup::one_time_keyboard
     pub fn one_time_keyboard(self) -> Self {
-        Self { force_reply: false, one_time_keyboard: true, ..self }
+        Self { one_time_keyboard: true, ..self }
     }
 
     // FIXME: document
@@ -126,14 +126,14 @@ impl KeyboardMarkup {
     where
         T: Into<String>,
     {
-        Self { force_reply: false, input_field_placeholder: val.into(), ..self }
+        Self { input_field_placeholder: val.into(), ..self }
     }
 
     /// Sets [`selective`] to `true`.
     ///
     /// [`selective`]: KeyboardMarkup::selective
     pub fn selective(self) -> Self {
-        Self { force_reply: false, selective: true, ..self }
+        Self { selective: true, ..self }
     }
 }
 
@@ -148,6 +148,21 @@ impl KeyboardMarkup {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn force_reply_survives_existing_keyboard_builders() {
+        let keyboard = KeyboardMarkup::new([[KeyboardButton::new("Choose")]]).force_reply(true);
+
+        for (name, markup) in [
+            ("persistent", keyboard.clone().persistent()),
+            ("resize_keyboard", keyboard.clone().resize_keyboard()),
+            ("one_time_keyboard", keyboard.clone().one_time_keyboard()),
+            ("input_field_placeholder", keyboard.clone().input_field_placeholder("Choose")),
+            ("selective", keyboard.selective()),
+        ] {
+            assert_eq!(serde_json::to_value(markup).unwrap()["force_reply"], true, "{name}");
+        }
+    }
 
     #[test]
     fn deserialize() {
