@@ -41,6 +41,10 @@ bitflags::bitflags! {
         /// Set if the user is allowed to send text messages, contacts,
         /// giveaways, giveaway winners, invoices, locations and venues
         const SEND_MESSAGES = 1;
+        /// User may react to messages.
+        const REACT_TO_MESSAGES = 1 << 14;
+        /// User may edit their own member tag.
+        const EDIT_TAG = 1 << 15;
 
         /// Set if the user is allowed to send polls
         const SEND_POLLS = 1 << 1;
@@ -213,6 +217,10 @@ impl ChatPermissions {
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 struct ChatPermissionsRaw {
     #[serde(default, skip_serializing_if = "Not::not")]
+    can_edit_tag: bool,
+    #[serde(default, skip_serializing_if = "Not::not")]
+    can_react_to_messages: bool,
+    #[serde(default, skip_serializing_if = "Not::not")]
     can_send_messages: bool,
 
     #[serde(default, skip_serializing_if = "Not::not")]
@@ -254,7 +262,8 @@ struct ChatPermissionsRaw {
     // HACK: do not `skip_serializing_if = "Not::not"`, from tg docs:
     //       > If omitted defaults to the value of `can_pin_messages`
     //       but we don't have two different values for "absent" and "false"...
-    //       or did they mean that `can_pin_messages` implies `can_manage_topics`?..
+    //       or did they mean that `can_pin_messages` implies
+    // `can_manage_topics`?..
     #[serde(default)]
     can_manage_topics: bool,
 }
@@ -262,6 +271,8 @@ struct ChatPermissionsRaw {
 impl From<ChatPermissions> for ChatPermissionsRaw {
     fn from(this: ChatPermissions) -> Self {
         Self {
+            can_react_to_messages: this.can_react_to_messages(),
+            can_edit_tag: this.can_edit_tag(),
             can_send_messages: this.can_send_messages(),
             can_send_audios: this.can_send_audios(),
             can_send_documents: this.can_send_documents(),
@@ -283,6 +294,8 @@ impl From<ChatPermissions> for ChatPermissionsRaw {
 impl From<ChatPermissionsRaw> for ChatPermissions {
     fn from(
         ChatPermissionsRaw {
+            can_edit_tag,
+            can_react_to_messages,
             can_send_messages,
             can_send_audios,
             can_send_documents,
@@ -300,6 +313,12 @@ impl From<ChatPermissionsRaw> for ChatPermissions {
         }: ChatPermissionsRaw,
     ) -> Self {
         let mut this = Self::empty();
+        if can_edit_tag {
+            this |= Self::EDIT_TAG;
+        }
+        if can_react_to_messages {
+            this |= Self::REACT_TO_MESSAGES;
+        }
 
         if can_send_messages {
             this |= Self::SEND_MESSAGES;
@@ -340,12 +359,27 @@ impl From<ChatPermissionsRaw> for ChatPermissions {
         if can_pin_messages {
             this |= Self::PIN_MESSAGES;
         }
-        // FIXME: should we do `|| can_pin_messages` here? (the same tg doc weirdness)
+        // FIXME: should we do `|| can_pin_messages` here? (the same tg doc
+        // weirdness)
         if can_manage_topics {
             this |= Self::MANAGE_TOPICS
         }
 
         this
+    }
+}
+
+impl ChatPermissions {
+    /// Checks whether the user may react to messages.
+    pub fn can_react_to_messages(&self) -> bool {
+        self.contains(Self::REACT_TO_MESSAGES)
+    }
+}
+
+impl ChatPermissions {
+    /// Checks whether the user may edit tag.
+    pub fn can_edit_tag(&self) -> bool {
+        self.contains(Self::EDIT_TAG)
     }
 }
 

@@ -6,10 +6,13 @@ use crate::types::{MessageEntity, ParseMode};
 ///
 /// [The official docs](https://core.telegram.org/bots/api#inputpolloption).
 #[derive(Clone, Debug)]
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq)]
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InputPollOption {
+    /// Optional media attached to this option.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<crate::types::InputPollOptionMedia>,
     /// Option text, 1-100 characters.
     pub text: String,
 
@@ -39,7 +42,7 @@ impl InputPollOption {
     where
         S: Into<String>,
     {
-        Self { text: text.into(), formatting: None }
+        Self { text: text.into(), formatting: None, media: None }
     }
 
     pub fn text_parse_mode(self, text_parse_mode: ParseMode) -> Self {
@@ -60,6 +63,13 @@ impl From<String> for InputPollOption {
 impl From<&str> for InputPollOption {
     fn from(value: &str) -> Self {
         Self::new(value.to_owned())
+    }
+}
+
+impl InputPollOption {
+    pub fn media(mut self, media: crate::types::InputPollOptionMedia) -> Self {
+        self.media = Some(media);
+        self
     }
 }
 

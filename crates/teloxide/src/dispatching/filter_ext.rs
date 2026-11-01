@@ -73,6 +73,18 @@ macro_rules! define_message_ext {
 // FIXME: change macro so that we can filter things without getters
 // May be expanded in the future.
 define_message_ext! {
+    (filter_chat_owner_left, Message::chat_owner_left),
+    (filter_chat_owner_changed, Message::chat_owner_changed),
+    (filter_gift_upgrade_sent, Message::gift_upgrade_sent),
+    (filter_community_chat_added, Message::community_chat_added),
+    (filter_community_chat_joined, Message::community_chat_joined),
+    (filter_community_chat_removed, Message::community_chat_removed),
+    (filter_managed_bot_created, Message::managed_bot_created),
+    (filter_poll_option_added, Message::poll_option_added),
+    (filter_poll_option_deleted, Message::poll_option_deleted),
+    (filter_live_photo, Message::live_photo),
+    (filter_rich_message, Message::rich_message),
+
     // MessageCommon
     (filter_from, Message::from),
     // MediaKind variants of the MessageKind::Common
@@ -165,6 +177,11 @@ macro_rules! define_update_ext {
 }
 
 define_update_ext! {
+    (filter_guest_message, UpdateKind::GuestMessage, GuestMessage),
+    (filter_managed_bot, UpdateKind::ManagedBot, ManagedBot),
+    (filter_subscription, UpdateKind::Subscription, Subscription),
+    (filter_stopped_message_generation, UpdateKind::StoppedMessageGeneration, StoppedMessageGeneration),
+
     (filter_message, UpdateKind::Message, Message),
     (filter_edited_message, UpdateKind::EditedMessage, EditedMessage),
     (filter_channel_post, UpdateKind::ChannelPost, ChannelPost),

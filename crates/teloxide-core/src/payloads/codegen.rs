@@ -56,8 +56,8 @@ fn codegen_payloads() {
             .map(|field| format!("    @[multipart = {}]\n", field.join(", ")))
             .unwrap_or_default();
 
-        // FIXME: CreateNewStickerSet has to be be only Debug + Clone + Serialize (maybe
-        // better fix?)
+        // FIXME: CreateNewStickerSet has to be be only Debug + Clone +
+        // Serialize (maybe better fix?)
         let derive = if !multipart.is_empty()
             || matches!(
                 &*method.names.1,
@@ -265,6 +265,6 @@ fn multipart_input_file_fields(m: &Method) -> Option<Vec<&str>> {
 }
 
 fn ty_is_multiparty(ty: &Type) -> bool {
-    matches!(ty, Type::RawTy(x) if x == "InputFile" || x == "InputSticker")
-        || matches!(ty, Type::Option(inner) if ty_is_multiparty(inner))
+    matches!(ty, Type::RawTy(ty) if matches!(ty.as_str(), "InputFile" | "InputSticker" | "InputMedia" | "InputPaidMedia" | "InputProfilePhoto" | "InputStoryContent" | "InputRichMessage" | "InputPollOption" | "InputPollMedia" | "InlineQueryResult"))
+        || matches!(ty, Type::Option(inner) | Type::ArrayOf(inner) if ty_is_multiparty(inner))
 }

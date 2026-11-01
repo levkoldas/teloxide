@@ -17,8 +17,8 @@ use crate::{
 impl Download for Bot {
     type Err<'dst> = DownloadError;
 
-    // I would like to unbox this, but my coworkers will kill me if they'll see yet
-    // another hand written `Future`. (waffle)
+    // I would like to unbox this, but my coworkers will kill me if they'll see
+    // yet another hand written `Future`. (waffle)
     type Fut<'dst> = BoxFuture<'dst, Result<(), Self::Err<'dst>>>;
 
     fn download_file<'dst>(
@@ -30,8 +30,9 @@ impl Download for Bot {
             Some(host) => ["localhost", "127.0.0.1", "::1"].contains(host),
             None => false,
         };
-        // If path is absolute and api_url contains localhost, it is pretty clear there
-        // is a local TBA server with --local option, we can just copy the file
+        // If path is absolute and api_url contains localhost, it is pretty
+        // clear there is a local TBA server with --local option, we can just
+        // copy the file
         if is_localhost && Path::new(&path).is_absolute() {
             return copy_file(path, destination).boxed();
         }

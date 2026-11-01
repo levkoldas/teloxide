@@ -1,17 +1,18 @@
 use std::iter;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::types::{InputFile, MessageEntity, ParseMode, Seconds};
 
 /// This object represents the content of a media message to be sent.
 ///
 /// [The official docs](https://core.telegram.org/bots/api#inputmedia).
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum InputMedia {
+    LivePhoto(crate::types::InputMediaLivePhoto),
     Photo(InputMediaPhoto),
     Video(InputMediaVideo),
     Animation(InputMediaAnimation),
@@ -23,7 +24,7 @@ pub enum InputMedia {
 ///
 /// [The official docs](https://core.telegram.org/bots/api#inputmediaphoto).
 #[serde_with::skip_serializing_none]
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InputMediaPhoto {
     /// File to send.
@@ -109,7 +110,7 @@ impl InputMediaPhoto {
 ///
 /// [The official docs](https://core.telegram.org/bots/api#inputmediavideo).
 #[serde_with::skip_serializing_none]
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InputMediaVideo {
     // File to send.
@@ -267,7 +268,7 @@ impl InputMediaVideo {
 ///
 /// [The official docs](https://core.telegram.org/bots/api#inputmediaanimation).
 #[serde_with::skip_serializing_none]
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InputMediaAnimation {
     /// File to send.
@@ -394,7 +395,7 @@ impl InputMediaAnimation {
 ///
 /// [The official docs](https://core.telegram.org/bots/api#inputmediaaudio).
 #[serde_with::skip_serializing_none]
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InputMediaAudio {
     /// File to send.
@@ -503,7 +504,7 @@ impl InputMediaAudio {
 ///
 /// [The official docs](https://core.telegram.org/bots/api#inputmediadocument).
 #[serde_with::skip_serializing_none]
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InputMediaDocument {
     /// File to send.
@@ -584,7 +585,8 @@ impl InputMediaDocument {
 impl From<InputMedia> for InputFile {
     fn from(media: InputMedia) -> InputFile {
         match media {
-            InputMedia::Photo(InputMediaPhoto { media, .. })
+            InputMedia::LivePhoto(crate::types::InputMediaLivePhoto { media, .. })
+            | InputMedia::Photo(InputMediaPhoto { media, .. })
             | InputMedia::Document(InputMediaDocument { media, .. })
             | InputMedia::Audio(InputMediaAudio { media, .. })
             | InputMedia::Animation(InputMediaAnimation { media, .. })
@@ -598,30 +600,44 @@ impl InputMedia {
     pub(crate) fn files(&self) -> impl Iterator<Item = &InputFile> {
         use InputMedia::*;
 
-        let (media, thumbnail) = match self {
-            Photo(InputMediaPhoto { media, .. }) => (media, None),
+        let (media, thumbnail, cover) = match self {
+            LivePhoto(crate::types::InputMediaLivePhoto { media, photo, .. }) => {
+                (media, None, Some(photo))
+            }
+            Photo(InputMediaPhoto { media, .. }) => (media, None, None),
             Document(InputMediaDocument { media, thumbnail, .. })
             | Audio(InputMediaAudio { media, thumbnail, .. })
-            | Animation(InputMediaAnimation { media, thumbnail, .. })
-            | Video(InputMediaVideo { media, thumbnail, .. }) => (media, thumbnail.as_ref()),
+            | Animation(InputMediaAnimation { media, thumbnail, .. }) => {
+                (media, thumbnail.as_ref(), None)
+            }
+            Video(InputMediaVideo { media, thumbnail, cover, .. }) => {
+                (media, thumbnail.as_ref(), cover.as_ref())
+            }
         };
 
-        iter::once(media).chain(thumbnail)
+        iter::once(media).chain(thumbnail).chain(cover)
     }
 
     /// Returns an iterator of all files in this input media
     pub(crate) fn files_mut(&mut self) -> impl Iterator<Item = &mut InputFile> {
         use InputMedia::*;
 
-        let (media, thumbnail) = match self {
-            Photo(InputMediaPhoto { media, .. }) => (media, None),
+        let (media, thumbnail, cover) = match self {
+            LivePhoto(crate::types::InputMediaLivePhoto { media, photo, .. }) => {
+                (media, None, Some(photo))
+            }
+            Photo(InputMediaPhoto { media, .. }) => (media, None, None),
             Document(InputMediaDocument { media, thumbnail, .. })
             | Audio(InputMediaAudio { media, thumbnail, .. })
-            | Animation(InputMediaAnimation { media, thumbnail, .. })
-            | Video(InputMediaVideo { media, thumbnail, .. }) => (media, thumbnail.as_mut()),
+            | Animation(InputMediaAnimation { media, thumbnail, .. }) => {
+                (media, thumbnail.as_mut(), None)
+            }
+            Video(InputMediaVideo { media, thumbnail, cover, .. }) => {
+                (media, thumbnail.as_mut(), cover.as_mut())
+            }
         };
 
-        iter::once(media).chain(thumbnail)
+        iter::once(media).chain(thumbnail).chain(cover)
     }
 }
 

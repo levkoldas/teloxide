@@ -19,6 +19,10 @@ pub struct ChecklistTaskId(pub i32);
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct ChecklistTask {
+    /// Optional. Chat that completed the task; omitted if the task wasn't
+    /// completed by a chat
+    pub completed_by_chat: Option<crate::types::Chat>,
+
     /// Unique identifier of the task
     pub id: ChecklistTaskId,
 
@@ -167,4 +171,12 @@ pub struct ChecklistTasksAdded {
 
     /// List of tasks added to the checklist
     pub tasks: Vec<ChecklistTask>,
+}
+
+impl ChecklistTask {
+    /// Sets `completed_by_chat`.
+    pub fn completed_by_chat(mut self, value: crate::types::Chat) -> Self {
+        self.completed_by_chat = Some(value);
+        self
+    }
 }

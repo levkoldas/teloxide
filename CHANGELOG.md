@@ -6,7 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+### Changed
+
+- Update workspace dependencies, including SQLx 0.9, Redis 1.x, rand 0.10, and bincode 2.0.1.
+- Preserve the bincode 1.x dialogue wire format; serializer errors now use `serializer::BincodeError`.
+- Raise the minimum supported Rust version to 1.96 for the refreshed dependency graph.
+
 ### Added
+
+- Bot API 10.3 methods and types: rich messages and drafts, ephemeral messages,
+  managed bots, guest queries, live photos, poll media, communities, user gifts,
+  profile audios, member tags, styled/disabled keyboards, and subscription updates.
+- Dispatch filters and allowed-update flags for guest messages, managed bots,
+  subscriptions, and stopped message generation.
+- Recursive upload collection for rich blocks, poll options, and inline results,
+  including video covers and profile/story uploads.
+
 
 - `MessageToEditHasNoText` variant to `ApiError` ([#1426](https://github.com/teloxide/teloxide/issues/1426))
 - `ParticipantIdInvalid` and `ChatAdminRequired` variants to `ApiError` ([#1349](https://github.com/teloxide/teloxide/issues/1349))

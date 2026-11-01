@@ -14,6 +14,11 @@ use crate::types::KeyboardButton;
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize, Default)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct KeyboardMarkup {
+    /// Optional. Pass True if the reply interface must be shown to the user, as
+    /// if they had manually selected the bot's message and tapped 'Reply'
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub force_reply: bool,
+
     /// Array of button rows, each represented by an Array of
     /// [`KeyboardButton`] objects
     ///
@@ -68,6 +73,7 @@ impl KeyboardMarkup {
         K::Item: IntoIterator<Item = KeyboardButton>,
     {
         Self {
+            force_reply: false,
             keyboard: keyboard.into_iter().map(<_>::into_iter).map(<_>::collect).collect(),
             is_persistent: false,
             resize_keyboard: false,
@@ -98,21 +104,21 @@ impl KeyboardMarkup {
     ///
     /// [`is_persistent`]: KeyboardMarkup::is_persistent
     pub fn persistent(self) -> Self {
-        Self { is_persistent: true, ..self }
+        Self { force_reply: false, is_persistent: true, ..self }
     }
 
     /// Sets [`resize_keyboard`] to `true`.
     ///
     /// [`resize_keyboard`]: KeyboardMarkup::resize_keyboard
     pub fn resize_keyboard(self) -> Self {
-        Self { resize_keyboard: true, ..self }
+        Self { force_reply: false, resize_keyboard: true, ..self }
     }
 
     /// Sets [`one_time_keyboard`] to `true`.
     ///
     /// [`one_time_keyboard`]: KeyboardMarkup::one_time_keyboard
     pub fn one_time_keyboard(self) -> Self {
-        Self { one_time_keyboard: true, ..self }
+        Self { force_reply: false, one_time_keyboard: true, ..self }
     }
 
     // FIXME: document
@@ -120,14 +126,22 @@ impl KeyboardMarkup {
     where
         T: Into<String>,
     {
-        Self { input_field_placeholder: val.into(), ..self }
+        Self { force_reply: false, input_field_placeholder: val.into(), ..self }
     }
 
     /// Sets [`selective`] to `true`.
     ///
     /// [`selective`]: KeyboardMarkup::selective
     pub fn selective(self) -> Self {
-        Self { selective: true, ..self }
+        Self { force_reply: false, selective: true, ..self }
+    }
+}
+
+impl KeyboardMarkup {
+    /// Sets `force_reply`.
+    pub fn force_reply(mut self, value: bool) -> Self {
+        self.force_reply = value;
+        self
     }
 }
 

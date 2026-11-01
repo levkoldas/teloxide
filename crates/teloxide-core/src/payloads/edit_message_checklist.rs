@@ -2,7 +2,9 @@
 
 use serde::Serialize;
 
-use crate::types::{BusinessConnectionId, ChatId, InputChecklist, Message, MessageId, ReplyMarkup};
+use crate::types::{
+    BusinessConnectionId, InputChecklist, Message, MessageId, Recipient, ReplyMarkup,
+};
 
 impl_payload! {
     /// Use this method to edit a checklist on behalf of a connected business account. On success, the edited [`Message`] is returned.
@@ -14,7 +16,7 @@ impl_payload! {
             /// Unique identifier of the business connection on behalf of which the message will be sent
             pub business_connection_id: BusinessConnectionId,
             /// Unique identifier for the target chat
-            pub chat_id: ChatId [into],
+            pub chat_id: Recipient [into],
             /// Unique identifier for the target message
             #[serde(flatten)]
             pub message_id: MessageId,

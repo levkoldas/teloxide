@@ -75,7 +75,7 @@ pub async fn start(
             msg.chat.id,
             format!(
                 "Hello!\n\nThis link allows anyone to message you secretly: {}?start={}",
-                me.tme_url(),
+                me.tme_url().expect("This example requires an active bot username"),
                 msg.chat.id
             ),
         )
@@ -119,7 +119,7 @@ pub async fn send_message(
                     msg.chat.id,
                     format!(
                         "Message sent!\n\nYour link is: {}?start={}",
-                        me.tme_url(),
+                        me.tme_url().expect("This example requires an active bot username"),
                         msg.chat.id
                     ),
                 )

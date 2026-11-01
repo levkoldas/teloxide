@@ -46,6 +46,8 @@ where
     B::ForwardMessages: Clone + Send + Sync + 'static,
     B::CopyMessage: Clone + Send + Sync + 'static,
     B::CopyMessages: Clone + Send + Sync + 'static,
+    B::SendLivePhoto: Clone + Send + Sync + 'static,
+    B::SendRichMessage: Clone + Send + Sync + 'static,
     B::SendPhoto: Clone + Send + Sync + 'static,
     B::SendAudio: Clone + Send + Sync + 'static,
     B::SendDocument: Clone + Send + Sync + 'static,
@@ -68,6 +70,10 @@ where
     type Err = B::Err;
 
     requester_forward! {
+        send_rich_message,
+
+        send_live_photo,
+
         send_message,
         forward_message,
         forward_messages,
@@ -95,6 +101,33 @@ where
     }
 
     requester_forward! {
+        edit_ephemeral_message_text,
+        send_rich_message_draft,
+
+        send_message_draft,
+        get_user_profile_audios,
+        set_chat_member_tag,
+        answer_chat_join_request_query,
+        send_chat_join_request_web_app,
+        get_user_personal_chat_messages,
+        answer_guest_query,
+        get_managed_bot_token,
+        replace_managed_bot_token,
+        get_managed_bot_access_settings,
+        set_managed_bot_access_settings,
+        set_my_profile_photo,
+        remove_my_profile_photo,
+        get_user_gifts,
+        get_chat_gifts,
+        repost_story,
+        save_prepared_keyboard_button,
+        edit_ephemeral_message_media,
+        edit_ephemeral_message_caption,
+        edit_ephemeral_message_reply_markup,
+        delete_ephemeral_message,
+        delete_message_reaction,
+        delete_all_message_reactions,
+
         get_me,
         log_out,
         close,

@@ -10,6 +10,11 @@ use crate::types::{CustomEmojiId, Rgb};
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct ForumTopicCreated {
+    /// Optional. True, if the name of the topic wasn't specified explicitly by
+    /// its creator and likely needs to be changed by the bot
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub is_name_implicit: bool,
+
     /// Name of the topic.
     pub name: String,
 
@@ -18,6 +23,14 @@ pub struct ForumTopicCreated {
 
     /// Unique identifier of the custom emoji shown as the topic icon.
     pub icon_custom_emoji_id: Option<CustomEmojiId>,
+}
+
+impl ForumTopicCreated {
+    /// Sets `is_name_implicit`.
+    pub fn is_name_implicit(mut self, value: bool) -> Self {
+        self.is_name_implicit = value;
+        self
+    }
 }
 
 #[cfg(test)]

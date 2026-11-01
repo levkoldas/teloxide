@@ -282,7 +282,8 @@ pub struct Dispatcher<R, Err, Key> {
     worker_queue_size: usize,
     current_number_of_active_workers: Arc<AtomicU32>,
     max_number_of_active_workers: Arc<AtomicU32>,
-    // Tokio TX channel parts associated with chat IDs that consume updates sequentially.
+    // Tokio TX channel parts associated with chat IDs that consume updates
+    // sequentially.
     workers: HashMap<Key, Worker>,
     // The default TX part that consume updates concurrently.
     default_worker: Option<Worker>,
@@ -402,7 +403,8 @@ where
         Eh: ErrorHandler<UListener::Err> + Send + Sync + 'a,
         UListener::Err: Debug,
     {
-        // FIXME: there should be a way to check if dependency is already inserted
+        // FIXME: there should be a way to check if dependency is already
+        // inserted
         let me = self.bot.get_me().send().await?;
         self.dependencies.insert(me);
         self.dependencies.insert(self.bot.clone());
@@ -562,9 +564,10 @@ where
             });
 
         for handle in handles {
-            // We must wait for worker to stop anyway, even though it should stop
-            // immediately. This helps in case if we've checked that the worker
-            // is waiting in between it received the update and set the flag.
+            // We must wait for worker to stop anyway, even though it should
+            // stop immediately. This helps in case if we've checked that the
+            // worker is waiting in between it received the update and set the
+            // flag.
             let _ = handle.await;
         }
     }

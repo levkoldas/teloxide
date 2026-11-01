@@ -7,12 +7,23 @@ use crate::types::{ChecklistTaskId, MessageEntity, MessageId, Recipient};
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct ReplyParameters {
+    /// Optional. Identifier of the incoming ephemeral message that will be
+    /// replied to in the current chat. A reply to an ephemeral message must
+    /// itself be an ephemeral message. An ephemeral message may only be
+    /// replied to within 15 seconds of being sent. Required if message_id
+    /// isn't specified.
+    pub ephemeral_message_id: Option<i64>,
+
+    /// Optional. Persistent identifier of the specific poll option to be
+    /// replied to
+    pub poll_option_id: Option<String>,
+
     /// Identifier of the message that will be replied to in the current chat,
     /// or in the chat _chat\_id_ if it is specified
     // Issue https://github.com/teloxide/teloxide/issues/1135
-    #[serde(with = "crate::types::msg_id_as_int")]
-    #[cfg_attr(test, schemars(with = "i32"))]
-    pub message_id: MessageId,
+    #[serde(default, with = "crate::types::option_msg_id_as_int")]
+    #[cfg_attr(test, schemars(with = "Option<i32>"))]
+    pub message_id: Option<MessageId>,
     /// If the message to be replied to is from a different chat, unique
     /// identifier for the chat or username of the channel (in the format
     /// `@channelusername`). Not supported for messages sent on behalf of a
@@ -46,7 +57,12 @@ pub struct ReplyParameters {
 
 impl ReplyParameters {
     pub fn new(message_id: MessageId) -> Self {
-        Self { message_id, ..Self::default() }
+        Self {
+            ephemeral_message_id: None,
+            poll_option_id: None,
+            message_id: Some(message_id),
+            ..Self::default()
+        }
     }
 
     /// Setter for the `chat_id` field
@@ -71,5 +87,37 @@ impl ReplyParameters {
     pub fn checklist_task_id(mut self, checklist_task_id: ChecklistTaskId) -> Self {
         self.checklist_task_id = Some(checklist_task_id);
         self
+    }
+}
+
+impl ReplyParameters {
+    /// Sets `ephemeral_message_id`.
+    pub fn ephemeral_message_id(mut self, value: i64) -> Self {
+        self.ephemeral_message_id = Some(value);
+        self
+    }
+    /// Sets `poll_option_id`.
+    pub fn poll_option_id(mut self, value: String) -> Self {
+        self.poll_option_id = Some(value);
+        self
+    }
+}
+
+impl From<MessageId> for ReplyParameters {
+    fn from(message_id: MessageId) -> Self {
+        Self::new(message_id)
+    }
+}
+impl From<&crate::types::Message> for ReplyParameters {
+    fn from(message: &crate::types::Message) -> Self {
+        match message.ephemeral_message_id {
+            Some(id) => Self::default().ephemeral_message_id(id),
+            None => Self::new(message.id),
+        }
+    }
+}
+impl From<crate::types::Message> for ReplyParameters {
+    fn from(message: crate::types::Message) -> Self {
+        Self::from(&message)
     }
 }

@@ -3,8 +3,8 @@
 use serde::Serialize;
 
 use crate::types::{
-    MessageEntity, MessageId, ParseMode, Recipient, ReplyMarkup, ReplyParameters, Seconds,
-    SuggestedPostParameters, ThreadId, TopicId,
+    EffectId, MessageEntity, MessageId, ParseMode, Recipient, ReplyMarkup, ReplyParameters,
+    Seconds, SuggestedPostParameters, ThreadId, TopicId,
 };
 
 impl_payload! {
@@ -58,6 +58,8 @@ impl_payload! {
             /// [inline keyboard]: https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating
             /// [custom reply keyboard]: https://core.telegram.org/bots#keyboards
             pub reply_markup: ReplyMarkup [into],
+            /// Unique identifier of the message effect to be added to the message; only available when copying to private chats
+            pub message_effect_id: EffectId,
         }
     }
 }

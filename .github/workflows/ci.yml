@@ -20,14 +20,14 @@ env:
   # - crates/teloxide-core/src/codegen.rs
   # - rust-toolchain.toml
   # - below in the test matrix
-  rust_nightly: nightly-2025-06-12
+  rust_nightly: nightly-2026-09-01
   # When updating this, also update:
   # - **/README.md
   # - **/src/lib.rs
   # - down below in a matrix
   # - `Cargo.toml`
   # - **/CHANGELOG.md
-  rust_msrv: 1.85.0
+  rust_msrv: 1.96.0
 
   CI: 1
 
@@ -47,7 +47,7 @@ jobs:
 
     steps:
       - name: Check whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@release/v1
+        uses: re-actors/alls-green@v1.3.0
         with:
           jobs: ${{ toJSON(needs) }}
 
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
 
       - name: Install Rust ${{ env.rust_nightly }}
         uses: dtolnay/rust-toolchain@master
@@ -66,7 +66,7 @@ jobs:
           components: rustfmt
 
       - name: Cache Dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2.9.3
 
       - name: Check formatting
         run: |
@@ -105,15 +105,15 @@ jobs:
             toolchain: beta
             features: "--features full"
           - rust: nightly
-            toolchain: nightly-2025-06-12
+            toolchain: nightly-2026-09-01
             features: "--features full nightly"
           - rust: msrv
-            toolchain: 1.85.0
+            toolchain: 1.96.0
             features: "--features full"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
 
       - name: Install Rust ${{ matrix.toolchain }}
         uses: dtolnay/rust-toolchain@master
@@ -121,7 +121,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
 
       - name: Cache Dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2.9.3
 
       # Generally MSRV dump is not considered a breaking change in by the Rust community.
       # Thus a minor or a patch version dump of a dependency of ours, can bump MSRV.
@@ -176,7 +176,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@master
@@ -184,7 +184,7 @@ jobs:
           toolchain: stable
 
       - name: Cache Dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2.9.3
 
       - name: Check examples
         run: |
@@ -201,7 +201,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
 
       - name: Install Rust ${{ env.rust_nightly }}
         uses: dtolnay/rust-toolchain@master
@@ -210,7 +210,7 @@ jobs:
           components: clippy
 
       - name: Cache Dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2.9.3
 
       - name: clippy
         run: |
@@ -222,7 +222,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
 
       - name: Install Rust ${{ env.rust_nightly }}
         uses: dtolnay/rust-toolchain@master
@@ -230,7 +230,7 @@ jobs:
           toolchain: ${{ env.rust_nightly }}
 
       - name: Cache Dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2.9.3
 
       - name: rustdoc
         run: |

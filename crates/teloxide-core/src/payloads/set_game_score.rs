@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 
-use crate::types::{Message, MessageId, UserId};
+use crate::types::{ChatId, Message, MessageId, UserId};
 
 impl_payload! {
     /// Use this method to set the score of the specified user in a game. On success, returns the edited [`Message`]. Returns an error, if the new score is not greater than the user's current score in the chat and force is False.
@@ -18,7 +18,7 @@ impl_payload! {
             /// New score
             pub score: u64,
             /// Unique identifier for the target chat
-            pub chat_id: u32,
+            pub chat_id: ChatId [into],
             /// Identifier of the message to edit
             #[serde(flatten)]
             pub message_id: MessageId,

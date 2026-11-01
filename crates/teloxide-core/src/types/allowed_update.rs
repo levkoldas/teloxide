@@ -28,4 +28,8 @@ pub enum AllowedUpdate {
     ChatJoinRequest,
     ChatBoost,
     RemovedChatBoost,
+    GuestMessage,
+    ManagedBot,
+    Subscription,
+    StoppedMessageGeneration,
 }

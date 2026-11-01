@@ -7,6 +7,7 @@ use crate::types::{
 };
 
 impl_payload! {
+    @[multipart = content]
     /// Edits a story previously posted by the bot on behalf of a managed business account. Requires the _can_manage_stories_ business bot right. Returns [`Story`] on success.
     ///
     /// [`Story`]: crate::types::Story

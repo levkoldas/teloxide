@@ -28,7 +28,7 @@ use crate::types::{self, InputSticker};
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 #[cfg_attr(test, schemars(with = "String"))] // It is just a String in the TBA
 pub struct InputFile {
-    id: OnceCell<Arc<str>>,
+    id: Arc<OnceCell<Arc<str>>>,
     file_name: Option<Cow<'static, str>>,
     inner: InnerFile,
 }
@@ -96,7 +96,13 @@ impl InputFile {
 
     /// Set the file name for this file.
     pub fn file_name(mut self, name: impl Into<Cow<'static, str>>) -> Self {
-        self.file_name = Some(name.into());
+        let name = name.into();
+        if self.file_name.as_deref() != Some(name.as_ref()) {
+            // A renamed clone needs its own multipart part; ordinary clones
+            // share an ID so serializers may clone without losing attachments.
+            self.id = Arc::new(OnceCell::new());
+        }
+        self.file_name = Some(name);
         self
     }
 
@@ -111,7 +117,7 @@ impl InputFile {
     /// Shorthand for `Self { file_name: None, inner, id: default() }`
     /// (private because `InnerFile` is private implementation detail)
     fn new(inner: InnerFile) -> Self {
-        Self { file_name: None, inner, id: OnceCell::new() }
+        Self { file_name: None, inner, id: Arc::new(OnceCell::new()) }
     }
 
     /// Returns id of this file.
@@ -199,7 +205,8 @@ impl InputFile {
         let filename = self.take_or_guess_filename();
 
         match self.inner {
-            // Url and FileId are serialized just as strings, they don't need additional parts
+            // Url and FileId are serialized just as strings, they don't need
+            // additional parts
             Url(_) | FileId(_) => None,
 
             File(path_to_file) => {
@@ -211,7 +218,8 @@ impl InputFile {
                             Body::wrap_stream(file)
                         }
                         Err(err) => {
-                            // explicit type needed for `Bytes: From<?T>` in `wrap_stream`
+                            // explicit type needed for `Bytes: From<?T>` in
+                            // `wrap_stream`
                             let err = Err::<Bytes, _>(err);
                             Body::wrap_stream(stream::iter([err]))
                         }
@@ -252,8 +260,9 @@ impl Read {
         if !self.inner.is_taken() {
             let res = ArcBox::<TakeCell<dyn AsyncRead + Send + Unpin>>::try_from(self.inner);
             match res {
-                // Fast/easy path: this is the only file copy, so we can just forward the underlying
-                // `dyn AsyncRead` via some adaptors to reqwest.
+                // Fast/easy path: this is the only file copy, so we can just
+                // forward the underlying `dyn AsyncRead` via some adaptors to
+                // reqwest.
                 Ok(arc_box) => {
                     let fr = FramedRead::new(ExclusiveArcAsyncRead(arc_box), BytesDecoder);
 
@@ -265,8 +274,8 @@ impl Read {
             }
         }
 
-        // Slow path: either wait until someone will read the whole `dyn AsyncRead` into
-        // a buffer, or be the one who reads
+        // Slow path: either wait until someone will read the whole `dyn
+        // AsyncRead` into a buffer, or be the one who reads
         let body = self.into_shared_body().await;
 
         Part::stream(body).file_name(filename)
@@ -306,20 +315,22 @@ impl Read {
                 };
 
                 // Initialize `buf` with the result.
-                // Error indicates that the `buf` was already initialized, but this can't happen
-                // since we synchronize through other means.
+                // Error indicates that the `buf` was already initialized, but
+                // this can't happen since we synchronize through other means.
                 let r = self.buf.set(res);
                 debug_assert!(r.is_ok());
 
                 // Notify other tasks that `buf` is initialized.
-                // Error indicates that there is no one to notify anymore, but we don't care.
+                // Error indicates that there is no one to notify anymore, but
+                // we don't care.
                 let _ = self.notify.send(());
             }
 
-            // Wait until `dyn AsyncRead` is read into a buffer, if it hasn't been read yet
+            // Wait until `dyn AsyncRead` is read into a buffer, if it hasn't
+            // been read yet
             None if self.buf.get().is_none() => {
-                // Error indicates that the sender was dropped, by we hold `Arc<Sender>`, so
-                // this can't happen
+                // Error indicates that the sender was dropped, by we hold
+                // `Arc<Sender>`, so this can't happen
                 let _ = self.wait.changed().await;
             }
 
@@ -332,7 +343,8 @@ impl Read {
         // notification, so at this point it's already initialized.
         match buf.get().unwrap() {
             Ok(_) => {
-                // We can't use `.iter()` here, because the iterator must capture `buf`
+                // We can't use `.iter()` here, because the iterator must
+                // capture `buf`
                 let mut i = 0;
                 let iter = iter::from_fn(move || match buf.get().unwrap() {
                     Ok(buf) if i >= buf.len() => None,
@@ -404,7 +416,7 @@ impl InputFileLike for InputFile {
     }
 }
 
-impl InputFileLike for Option<InputFile> {
+impl<T: InputFileLike> InputFileLike for Option<T> {
     fn copy_into(&self, into: &mut dyn FnMut(InputFile)) {
         if let Some(this) = self {
             this.copy_into(into)
@@ -425,5 +437,92 @@ impl InputFileLike for InputSticker {
 
     fn move_into(&mut self, into: &mut dyn FnMut(InputFile)) {
         self.sticker.move_into(into)
+    }
+}
+
+impl InputFileLike for types::InputMedia {
+    fn copy_into(&self, into: &mut dyn FnMut(InputFile)) {
+        self.files().for_each(|file| file.copy_into(into));
+    }
+    fn move_into(&mut self, into: &mut dyn FnMut(InputFile)) {
+        self.files_mut().for_each(|file| file.move_into(into));
+    }
+}
+impl InputFileLike for types::InputProfilePhoto {
+    fn copy_into(&self, into: &mut dyn FnMut(InputFile)) {
+        match self {
+            Self::Static(photo) => photo.photo.copy_into(into),
+            Self::Animated(photo) => photo.animation.copy_into(into),
+        }
+    }
+    fn move_into(&mut self, into: &mut dyn FnMut(InputFile)) {
+        match self {
+            Self::Static(photo) => photo.photo.move_into(into),
+            Self::Animated(photo) => photo.animation.move_into(into),
+        }
+    }
+}
+impl InputFileLike for types::InputStoryContent {
+    fn copy_into(&self, into: &mut dyn FnMut(InputFile)) {
+        match self {
+            Self::Photo(photo) => photo.photo.copy_into(into),
+            Self::Video(video) => video.video.copy_into(into),
+        }
+    }
+    fn move_into(&mut self, into: &mut dyn FnMut(InputFile)) {
+        match self {
+            Self::Photo(photo) => photo.photo.move_into(into),
+            Self::Video(video) => video.video.move_into(into),
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for InputFile {
+    /// Restores a file reference. Uploaded bytes and local paths are not
+    /// encoded in JSON.
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let reference = <String as serde::Deserialize>::deserialize(deserializer)?;
+        if reference.starts_with("https://") || reference.starts_with("http://") {
+            return url::Url::parse(&reference).map(Self::url).map_err(serde::de::Error::custom);
+        }
+        Ok(Self::file_id(types::FileId(reference)))
+    }
+}
+impl PartialEq for InputFile {
+    fn eq(&self, other: &Self) -> bool {
+        self.file_name == other.file_name
+            && match (&self.inner, &other.inner) {
+                (File(a), File(b)) => a == b,
+                (Bytes(a), Bytes(b)) => a == b,
+                (Url(a), Url(b)) => a == b,
+                (FileId(a), FileId(b)) => a == b,
+                (Read(a), Read(b)) => Arc::ptr_eq(&a.inner, &b.inner),
+                _ => false,
+            }
+    }
+}
+impl<T: InputFileLike> InputFileLike for Vec<T> {
+    fn copy_into(&self, into: &mut dyn FnMut(InputFile)) {
+        self.iter().for_each(|item| item.copy_into(into));
+    }
+    fn move_into(&mut self, into: &mut dyn FnMut(InputFile)) {
+        self.iter_mut().for_each(|item| item.move_into(into));
+    }
+}
+impl<T: InputFileLike> InputFileLike for Box<T> {
+    fn copy_into(&self, into: &mut dyn FnMut(InputFile)) {
+        (**self).copy_into(into);
+    }
+    fn move_into(&mut self, into: &mut dyn FnMut(InputFile)) {
+        (**self).move_into(into);
+    }
+}
+
+impl InputFileLike for types::InputPaidMedia {
+    fn copy_into(&self, into: &mut dyn FnMut(InputFile)) {
+        self.files().for_each(|file| file.copy_into(into));
+    }
+    fn move_into(&mut self, into: &mut dyn FnMut(InputFile)) {
+        self.files_mut().for_each(|file| file.move_into(into));
     }
 }

@@ -10,6 +10,18 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InlineKeyboardButton {
+    /// Optional. Unique identifier of the custom emoji shown before the text of
+    /// the button. Can only be used by bots that purchased additional
+    /// usernames on Fragment or in the messages directly sent by the bot to
+    /// private, group and supergroup chats if the owner of the bot has a
+    /// Telegram Premium subscription.
+    pub icon_custom_emoji_id: Option<crate::types::CustomEmojiId>,
+
+    /// Optional. Style of the button. Must be one of “danger” (red), “success”
+    /// (green) or “primary” (blue). If omitted, then an app-specific style
+    /// is used.
+    pub style: Option<crate::types::ButtonStyle>,
+
     /// Label text on the button.
     pub text: String,
 
@@ -21,6 +33,8 @@ pub struct InlineKeyboardButton {
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum InlineKeyboardButtonKind {
+    /// Disabled button that does nothing when pressed.
+    Disabled(crate::types::DisabledButton),
     /// HTTP or `tg://` url to be opened when button is pressed.
     ///
     /// Links in the form of `tg://user?id=<user_id>` can be used to mention a
@@ -113,7 +127,7 @@ impl InlineKeyboardButton {
     where
         S: Into<String>,
     {
-        Self { text: text.into(), kind }
+        Self { icon_custom_emoji_id: None, style: None, text: text.into(), kind }
     }
 
     /// Constructor for `InlineKeyboardButton` with [`Url`] kind.
@@ -217,5 +231,24 @@ impl InlineKeyboardButton {
         T: Into<String>,
     {
         Self::new(text, InlineKeyboardButtonKind::Pay(True))
+    }
+}
+
+impl InlineKeyboardButton {
+    /// Sets `icon_custom_emoji_id`.
+    pub fn icon_custom_emoji_id(mut self, value: crate::types::CustomEmojiId) -> Self {
+        self.icon_custom_emoji_id = Some(value);
+        self
+    }
+    /// Sets `style`.
+    pub fn style(mut self, value: crate::types::ButtonStyle) -> Self {
+        self.style = Some(value);
+        self
+    }
+}
+
+impl InlineKeyboardButton {
+    pub fn disabled(text: impl Into<String>, disabled: crate::types::DisabledButton) -> Self {
+        Self::new(text, InlineKeyboardButtonKind::Disabled(disabled))
     }
 }

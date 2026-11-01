@@ -55,7 +55,10 @@ where
 /// Can't serialize if the length is unknown, [see this issue](https://github.com/bincode-org/bincode/issues/167).
 /// Use [`Cbor`] or [`Json`] if you are storing structs like [`Message`].
 ///
-/// [Bincode]: https://github.com/servo/bincode
+/// Uses the legacy fixed-width encoding, compatible with dialogue data written
+/// by bincode 1.x. Trailing bytes are accepted, as in the previous serializer.
+///
+/// [Bincode]: https://docs.rs/bincode/2.0.1/bincode/
 /// [`Cbor`]: crate::dispatching::dialogue::serializer::Cbor
 /// [`Json`]: crate::dispatching::dialogue::serializer::Json
 /// [`Message`]: crate::types::Message
@@ -67,13 +70,54 @@ impl<D> Serializer<D> for Bincode
 where
     D: Serialize + DeserializeOwned,
 {
-    type Error = bincode::Error;
+    type Error = BincodeError;
 
     fn serialize(&self, val: &D) -> Result<Vec<u8>, Self::Error> {
-        bincode::serialize(val)
+        bincode::serde::encode_to_vec(val, bincode::config::legacy()).map_err(Into::into)
     }
 
     fn deserialize(&self, data: &[u8]) -> Result<D, Self::Error> {
-        bincode::deserialize(data)
+        bincode::serde::decode_from_slice(data, bincode::config::legacy())
+            .map(|(value, _)| value)
+            .map_err(Into::into)
+    }
+}
+
+/// An error encoding or decoding a bincode dialogue.
+#[cfg(feature = "bincode-serializer")]
+#[derive(Debug, thiserror::Error)]
+pub enum BincodeError {
+    #[error(transparent)]
+    Encode(#[from] bincode::error::EncodeError),
+    #[error(transparent)]
+    Decode(#[from] bincode::error::DecodeError),
+}
+
+#[cfg(all(test, feature = "bincode-serializer"))]
+mod tests {
+    use super::{Bincode, Serializer};
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    enum State {
+        Start,
+        Name { name: String, age: u16 },
+    }
+
+    #[test]
+    fn bincode_preserves_existing_dialogue_encoding() {
+        // bincode 1.x's free functions encode enum indices as u32, lengths as
+        // u64 and integers in little endian, without variable-length encoding.
+        let legacy = [1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, b'A', b'd', b'a', 37, 0];
+        let state = State::Name { name: "Ada".into(), age: 37 };
+        assert_eq!(Bincode.serialize(&state).unwrap(), legacy);
+        assert_eq!(<Bincode as Serializer<State>>::deserialize(&Bincode, &legacy).unwrap(), state);
+        let mut trailing = legacy.to_vec();
+        trailing.push(0xff);
+        assert_eq!(
+            <Bincode as Serializer<State>>::deserialize(&Bincode, &trailing).unwrap(),
+            state
+        );
+        assert!(<Bincode as Serializer<State>>::deserialize(&Bincode, &legacy[..5]).is_err());
     }
 }

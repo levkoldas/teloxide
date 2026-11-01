@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 
-use crate::types::{BusinessConnectionId, ReplyMarkup, True};
+use crate::types::{BusinessConnectionId, LivePeriod, ReplyMarkup, True};
 
 impl_payload! {
     /// Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to [`StopMessageLiveLocation`]. On success, True is returned.
@@ -34,6 +34,8 @@ impl_payload! {
             /// [inline keyboard]: https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating
             /// [custom reply keyboard]: https://core.telegram.org/bots#keyboards
             pub reply_markup: ReplyMarkup [into],
+            /// New period in seconds during which the location can be updated, starting from the message send date. If 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not exceed the current live_period by more than a day, and the live location expiration date must remain within the next 90 days. If not specified, then live_period remains unchanged
+            pub live_period: LivePeriod,
         }
     }
 }

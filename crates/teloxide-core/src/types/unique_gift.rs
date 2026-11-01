@@ -8,6 +8,26 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct UniqueGift {
+    /// Identifier of the regular gift from which the gift was upgraded
+    pub gift_id: crate::types::GiftId,
+
+    /// Optional. True, if the original regular gift was exclusively
+    /// purchaseable by Telegram Premium subscribers
+    pub is_premium: Option<crate::types::True>,
+
+    /// Optional. True, if the gift was used to craft another gift and isn't
+    /// available anymore
+    pub is_burned: Option<crate::types::True>,
+
+    /// Optional. True, if the gift is assigned from the TON blockchain and
+    /// can't be resold or transferred in Telegram
+    pub is_from_blockchain: Option<crate::types::True>,
+
+    /// Optional. The color scheme that can be used by the gift's owner for the
+    /// chat's name, replies to messages and link previews; for business
+    /// account gifts and gifts that are currently on sale only
+    pub colors: Option<crate::types::UniqueGiftColors>,
+
     /// Human-readable name of the regular gift from which this unique gift was
     /// upgraded
     pub base_name: String,
@@ -39,6 +59,10 @@ pub struct UniqueGift {
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct UniqueGiftModel {
+    /// Optional. Rarity of the model if it is a crafted model. Currently, can
+    /// be “uncommon”, “rare”, “epic”, or “legendary”.
+    pub rarity: Option<String>,
+
     /// Name of the model
     pub name: String,
 
@@ -106,6 +130,42 @@ pub struct UniqueGiftBackdropColors {
     pub text_color: Rgb,
 }
 
+impl UniqueGift {
+    /// Sets `gift_id`.
+    pub fn gift_id(mut self, value: crate::types::GiftId) -> Self {
+        self.gift_id = value;
+        self
+    }
+    /// Sets `is_premium`.
+    pub fn is_premium(mut self, value: crate::types::True) -> Self {
+        self.is_premium = Some(value);
+        self
+    }
+    /// Sets `is_burned`.
+    pub fn is_burned(mut self, value: crate::types::True) -> Self {
+        self.is_burned = Some(value);
+        self
+    }
+    /// Sets `is_from_blockchain`.
+    pub fn is_from_blockchain(mut self, value: crate::types::True) -> Self {
+        self.is_from_blockchain = Some(value);
+        self
+    }
+    /// Sets `colors`.
+    pub fn colors(mut self, value: crate::types::UniqueGiftColors) -> Self {
+        self.colors = Some(value);
+        self
+    }
+}
+
+impl UniqueGiftModel {
+    /// Sets `rarity`.
+    pub fn rarity(mut self, value: String) -> Self {
+        self.rarity = Some(value);
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -131,10 +191,16 @@ mod tests {
         };
 
         let unique_gift = UniqueGift {
+            gift_id: "gift".into(),
+            is_premium: None,
+            is_burned: None,
+            is_from_blockchain: None,
+            colors: None,
             base_name: "name".to_owned(),
             name: "name".to_owned(),
             number: 123,
             model: UniqueGiftModel {
+                rarity: None,
                 name: "name".to_owned(),
                 sticker: sticker.clone(),
                 rarity_per_mille: 123,
@@ -158,6 +224,7 @@ mod tests {
         };
 
         let unique_gift_json = r#"{
+            "gift_id": "gift",
             "base_name": "name",
             "name": "name",
             "number": 123,

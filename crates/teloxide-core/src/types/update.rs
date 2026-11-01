@@ -1,4 +1,5 @@
 #![allow(clippy::large_enum_variant)]
+use crate::types::{BotSubscriptionUpdated, ManagedBotUpdated, MessageGenerationStopped};
 use serde::{de::MapAccess, Deserialize, Serialize, Serializer};
 use serde_json::Value;
 
@@ -43,6 +44,18 @@ pub struct UpdateId(pub u32);
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum UpdateKind {
+    /// Optional. New guest message. The bot can use the field
+    /// Message.guest_query_id and the method answerGuestQuery to send a message
+    /// in response.
+    GuestMessage(Message),
+    /// Optional. A new bot was created to be managed by the bot, or token or
+    /// owner of a managed bot was changed
+    ManagedBot(ManagedBotUpdated),
+    /// Optional. User payment subscription has changed
+    Subscription(BotSubscriptionUpdated),
+    /// Optional. A user asked the bot to stop the generation of a message
+    StoppedMessageGeneration(MessageGenerationStopped),
+
     // NB: When adding new variants, don't forget to update
     //     - `AllowedUpdate`
     //     - `Update::user`
@@ -174,13 +187,17 @@ impl Update {
         use UpdateKind::*;
 
         let from = match &self.kind {
-            Message(m)
+            GuestMessage(m)
+            | Message(m)
             | EditedMessage(m)
             | ChannelPost(m)
             | EditedChannelPost(m)
             | BusinessMessage(m)
             | EditedBusinessMessage(m) => m.from.as_ref()?,
 
+            ManagedBot(m) => &m.user,
+            Subscription(s) => &s.user,
+            StoppedMessageGeneration(_) => return None,
             BusinessConnection(conn) => &conn.user,
 
             CallbackQuery(query) => &query.from,
@@ -241,8 +258,12 @@ impl Update {
         let i4 = |x| R(L(R(x)));
         let i5 = |x| R(R(x));
 
-        match &self.kind {
-            UpdateKind::Message(message)
+        if let UpdateKind::ManagedBot(managed) = &self.kind {
+            return R([&managed.user, &managed.bot].into_iter());
+        }
+        L(match &self.kind {
+            UpdateKind::GuestMessage(message)
+            | UpdateKind::Message(message)
             | UpdateKind::EditedMessage(message)
             | UpdateKind::ChannelPost(message)
             | UpdateKind::EditedChannelPost(message)
@@ -251,7 +272,7 @@ impl Update {
 
             UpdateKind::MessageReaction(answer) => {
                 if let Some(user) = answer.user() {
-                    return i1(once(user));
+                    return L(i1(once(user)));
                 }
                 i5(empty())
             }
@@ -266,7 +287,7 @@ impl Update {
 
             UpdateKind::PollAnswer(answer) => {
                 if let Some(user) = answer.voter.user() {
-                    return i1(once(user));
+                    return L(i1(once(user)));
                 }
                 i5(empty())
             }
@@ -277,23 +298,26 @@ impl Update {
 
             UpdateKind::ChatBoost(b) => {
                 if let Some(user) = b.boost.source.user() {
-                    return i1(once(user));
+                    return L(i1(once(user)));
                 }
                 i5(empty())
             }
             UpdateKind::RemovedChatBoost(b) => {
                 if let Some(user) = b.source.user() {
-                    return i1(once(user));
+                    return L(i1(once(user)));
                 }
                 i5(empty())
             }
 
-            UpdateKind::ChatJoinRequest(_)
+            UpdateKind::Subscription(subscription) => i1(once(&subscription.user)),
+            UpdateKind::ManagedBot(_) => unreachable!("handled above"),
+            UpdateKind::StoppedMessageGeneration(_)
+            | UpdateKind::ChatJoinRequest(_)
             | UpdateKind::MessageReactionCount(_)
             | UpdateKind::BusinessConnection(_)
             | UpdateKind::DeletedBusinessMessages(_)
             | UpdateKind::Error(_) => i5(empty()),
-        }
+        })
     }
 
     /// Returns the chat in which is update has happened, if any.
@@ -302,12 +326,15 @@ impl Update {
         use UpdateKind::*;
 
         let chat = match &self.kind {
-            Message(m)
+            GuestMessage(m)
+            | Message(m)
             | EditedMessage(m)
             | ChannelPost(m)
             | EditedChannelPost(m)
             | BusinessMessage(m)
             | EditedBusinessMessage(m) => &m.chat,
+            StoppedMessageGeneration(s) => &s.chat,
+            ManagedBot(_) | Subscription(_) => return None,
             CallbackQuery(q) => q.message.as_ref()?.chat(),
             ChatMember(m) => &m.chat,
             MyChatMember(m) => &m.chat,
@@ -363,21 +390,26 @@ impl<'de> Deserialize<'de> for UpdateKind {
             where
                 A: MapAccess<'de>,
             {
-                let mut tmp = None;
-
-                // Try to deserialize a borrowed-str key, or else try deserializing an owned
-                // string key
-                let key = map.next_key::<&str>().or_else(|_| {
-                    map.next_key::<String>().map(|k| {
-                        tmp = k;
-                        tmp.as_deref()
-                    })
-                });
+                let key = map.next_key::<String>();
 
                 let this = key
                     .ok()
                     .flatten()
-                    .and_then(|key| match key {
+                    .and_then(|key| match key.as_str() {
+                        "guest_message" => {
+                            map.next_value::<Message>().ok().map(UpdateKind::GuestMessage)
+                        }
+                        "managed_bot" => {
+                            map.next_value::<ManagedBotUpdated>().ok().map(UpdateKind::ManagedBot)
+                        }
+                        "subscription" => map
+                            .next_value::<BotSubscriptionUpdated>()
+                            .ok()
+                            .map(UpdateKind::Subscription),
+                        "stopped_message_generation" => map
+                            .next_value::<MessageGenerationStopped>()
+                            .ok()
+                            .map(UpdateKind::StoppedMessageGeneration),
                         "message" => map.next_value::<Message>().ok().map(UpdateKind::Message),
                         "edited_message" => {
                             map.next_value::<Message>().ok().map(UpdateKind::EditedMessage)
@@ -526,6 +558,14 @@ impl Serialize for UpdateKind {
             UpdateKind::RemovedChatBoost(v) => {
                 s.serialize_newtype_variant(name, 22, "removed_chat_boost", v)
             }
+            UpdateKind::GuestMessage(v) => {
+                s.serialize_newtype_variant(name, 23, "guest_message", v)
+            }
+            UpdateKind::ManagedBot(v) => s.serialize_newtype_variant(name, 24, "managed_bot", v),
+            UpdateKind::Subscription(v) => s.serialize_newtype_variant(name, 25, "subscription", v),
+            UpdateKind::StoppedMessageGeneration(v) => {
+                s.serialize_newtype_variant(name, 26, "stopped_message_generation", v)
+            }
             UpdateKind::Error(v) => v.serialize(s),
         }
     }
@@ -581,6 +621,14 @@ mod test {
         let expected = Update {
             id: UpdateId(892_252_934),
             kind: UpdateKind::Message(Message {
+                sender_tag: None,
+                receiver_user: None,
+                ephemeral_message_id: None,
+                guest_query_id: None,
+                reply_to_poll_option_id: None,
+                guest_bot_caller_user: None,
+                guest_bot_caller_chat: None,
+
                 via_bot: None,
                 id: MessageId(6557),
                 thread_id: None,
@@ -814,7 +862,9 @@ mod test {
         }
     },
     "update_id": 845402291
-}"#;
+}
+
+"#;
 
         let Update { kind, .. } = serde_json::from_str(json).unwrap();
         match kind {

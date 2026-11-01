@@ -8,6 +8,12 @@ use crate::types::{Chat, ChatId, ChatInviteLink, User};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct ChatJoinRequest {
+    /// Optional. Identifier of the join request query; for bots assigned to
+    /// process join requests only. If present, then the bot must call
+    /// sendChatJoinRequestWebApp or directly call
+    /// answerChatJoinRequestQuery within 10 seconds.
+    pub query_id: Option<String>,
+
     /// Chat to which the request was sent
     pub chat: Chat,
     /// User that sent the join request
@@ -25,4 +31,12 @@ pub struct ChatJoinRequest {
     pub bio: Option<String>,
     /// Chat invite link that was used by the user to send the join request
     pub invite_link: Option<ChatInviteLink>,
+}
+
+impl ChatJoinRequest {
+    /// Sets `query_id`.
+    pub fn query_id(mut self, value: String) -> Self {
+        self.query_id = Some(value);
+        self
+    }
 }

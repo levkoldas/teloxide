@@ -10,6 +10,9 @@ use crate::types::{FileMeta, PhotoSize, Seconds};
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct Video {
+    /// Optional. List of available qualities of the video
+    pub qualities: Option<Vec<crate::types::VideoQuality>>,
+
     /// Metadata of the video file.
     #[serde(flatten)]
     pub file: FileMeta,
@@ -39,4 +42,12 @@ pub struct Video {
     #[serde(with = "crate::types::non_telegram_types::mime::opt_deser")]
     #[cfg_attr(test, schemars(with = "Option<String>"))]
     pub mime_type: Option<Mime>,
+}
+
+impl Video {
+    /// Sets `qualities`.
+    pub fn qualities(mut self, value: Vec<crate::types::VideoQuality>) -> Self {
+        self.qualities = Some(value);
+        self
+    }
 }

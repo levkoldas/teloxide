@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/crates/v/teloxide.svg">
   </a>
   <a href="https://core.telegram.org/bots/api">
-    <img src="https://img.shields.io/badge/API%20coverage-Up%20to%209.2%20(inclusively)-green.svg">
+    <img src="https://img.shields.io/badge/API%20coverage-Up%20to%2010.3%20(inclusively)-green.svg">
   </a>
   <a href="https://t.me/teloxide">
     <img src="https://img.shields.io/badge/support-t.me%2Fteloxide-blueviolet">
@@ -59,7 +59,7 @@ $ set TELOXIDE_TOKEN=<Your token here>
 $ $env:TELOXIDE_TOKEN=<Your token here>
 ```
 
- 4. Make sure that your Rust compiler is up to date (`teloxide` currently requires rustc at least version 1.85):
+ 4. Make sure that your Rust compiler is up to date (`teloxide` currently requires rustc at least version 1.96):
 ```bash
 # If you're using stable
 $ rustup update stable

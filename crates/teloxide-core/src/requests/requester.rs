@@ -379,7 +379,7 @@ pub trait Requester {
         checklist: InputChecklist,
     ) -> Self::EditMessageChecklist
     where
-        C: Into<ChatId>;
+        C: Into<Recipient>;
 
     type SendVenue: Request<Payload = SendVenue, Err = Self::Err>;
 
@@ -430,7 +430,7 @@ pub trait Requester {
         checklist: InputChecklist,
     ) -> Self::SendChecklist
     where
-        C: Into<ChatId>;
+        C: Into<Recipient>;
 
     type SendDice: Request<Payload = SendDice, Err = Self::Err>;
 
@@ -999,27 +999,16 @@ pub trait Requester {
     type EditMessageText: Request<Payload = EditMessageText, Err = Self::Err>;
 
     /// For Telegram documentation see [`EditMessageText`].
-    fn edit_message_text<C, T>(
-        &self,
-        chat_id: C,
-        message_id: MessageId,
-        text: T,
-    ) -> Self::EditMessageText
+    fn edit_message_text<C>(&self, chat_id: C, message_id: MessageId) -> Self::EditMessageText
     where
-        C: Into<Recipient>,
-        T: Into<String>;
+        C: Into<Recipient>;
 
     type EditMessageTextInline: Request<Payload = EditMessageTextInline, Err = Self::Err>;
 
     /// For Telegram documentation see [`EditMessageTextInline`].
-    fn edit_message_text_inline<I, T>(
-        &self,
-        inline_message_id: I,
-        text: T,
-    ) -> Self::EditMessageTextInline
+    fn edit_message_text_inline<I>(&self, inline_message_id: I) -> Self::EditMessageTextInline
     where
-        I: Into<String>,
-        T: Into<String>;
+        I: Into<String>;
 
     type EditMessageCaption: Request<Payload = EditMessageCaption, Err = Self::Err>;
 
@@ -1613,19 +1602,21 @@ pub trait Requester {
     /// For Telegram documentation see [`SendGame`].
     fn send_game<C, G>(&self, chat_id: C, game_short_name: G) -> Self::SendGame
     where
-        C: Into<ChatId>,
+        C: Into<Recipient>,
         G: Into<String>;
 
     type SetGameScore: Request<Payload = SetGameScore, Err = Self::Err>;
 
     /// For Telegram documentation see [`SetGameScore`].
-    fn set_game_score(
+    fn set_game_score<C>(
         &self,
         user_id: UserId,
         score: u64,
-        chat_id: u32,
+        chat_id: C,
         message_id: MessageId,
-    ) -> Self::SetGameScore;
+    ) -> Self::SetGameScore
+    where
+        C: Into<ChatId>;
 
     type SetGameScoreInline: Request<Payload = SetGameScoreInline, Err = Self::Err>;
 
@@ -1645,6 +1636,267 @@ pub trait Requester {
     fn get_game_high_scores<T>(&self, user_id: UserId, target: T) -> Self::GetGameHighScores
     where
         T: Into<TargetMessage>;
+
+    type SendLivePhoto: Request<Payload = SendLivePhoto, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SendLivePhoto`].
+    fn send_live_photo<C>(
+        &self,
+        chat_id: C,
+        live_photo: InputFile,
+        photo: InputFile,
+    ) -> Self::SendLivePhoto
+    where
+        C: Into<Recipient>;
+
+    type SendMessageDraft: Request<Payload = SendMessageDraft, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SendMessageDraft`].
+    fn send_message_draft<C>(&self, chat_id: C, draft_id: i64) -> Self::SendMessageDraft
+    where
+        C: Into<ChatId>;
+
+    type GetUserProfileAudios: Request<Payload = GetUserProfileAudios, Err = Self::Err>;
+
+    /// For Telegram documentation see [`GetUserProfileAudios`].
+    fn get_user_profile_audios(&self, user_id: UserId) -> Self::GetUserProfileAudios;
+
+    type SetChatMemberTag: Request<Payload = SetChatMemberTag, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SetChatMemberTag`].
+    fn set_chat_member_tag<C>(&self, chat_id: C, user_id: UserId) -> Self::SetChatMemberTag
+    where
+        C: Into<Recipient>;
+
+    type AnswerChatJoinRequestQuery: Request<Payload = AnswerChatJoinRequestQuery, Err = Self::Err>;
+
+    /// For Telegram documentation see [`AnswerChatJoinRequestQuery`].
+    fn answer_chat_join_request_query<C, R>(
+        &self,
+        chat_join_request_query_id: C,
+        result: R,
+    ) -> Self::AnswerChatJoinRequestQuery
+    where
+        C: Into<String>,
+        R: Into<String>;
+
+    type SendChatJoinRequestWebApp: Request<Payload = SendChatJoinRequestWebApp, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SendChatJoinRequestWebApp`].
+    fn send_chat_join_request_web_app<C, W>(
+        &self,
+        chat_join_request_query_id: C,
+        web_app_url: W,
+    ) -> Self::SendChatJoinRequestWebApp
+    where
+        C: Into<String>,
+        W: Into<String>;
+
+    type GetUserPersonalChatMessages: Request<
+        Payload = GetUserPersonalChatMessages,
+        Err = Self::Err,
+    >;
+
+    /// For Telegram documentation see [`GetUserPersonalChatMessages`].
+    fn get_user_personal_chat_messages(
+        &self,
+        user_id: UserId,
+        limit: u8,
+    ) -> Self::GetUserPersonalChatMessages;
+
+    type AnswerGuestQuery: Request<Payload = AnswerGuestQuery, Err = Self::Err>;
+
+    /// For Telegram documentation see [`AnswerGuestQuery`].
+    fn answer_guest_query<G>(
+        &self,
+        guest_query_id: G,
+        result: InlineQueryResult,
+    ) -> Self::AnswerGuestQuery
+    where
+        G: Into<String>;
+
+    type GetManagedBotToken: Request<Payload = GetManagedBotToken, Err = Self::Err>;
+
+    /// For Telegram documentation see [`GetManagedBotToken`].
+    fn get_managed_bot_token(&self, user_id: UserId) -> Self::GetManagedBotToken;
+
+    type ReplaceManagedBotToken: Request<Payload = ReplaceManagedBotToken, Err = Self::Err>;
+
+    /// For Telegram documentation see [`ReplaceManagedBotToken`].
+    fn replace_managed_bot_token(&self, user_id: UserId) -> Self::ReplaceManagedBotToken;
+
+    type GetManagedBotAccessSettings: Request<
+        Payload = GetManagedBotAccessSettings,
+        Err = Self::Err,
+    >;
+
+    /// For Telegram documentation see [`GetManagedBotAccessSettings`].
+    fn get_managed_bot_access_settings(&self, user_id: UserId)
+        -> Self::GetManagedBotAccessSettings;
+
+    type SetManagedBotAccessSettings: Request<
+        Payload = SetManagedBotAccessSettings,
+        Err = Self::Err,
+    >;
+
+    /// For Telegram documentation see [`SetManagedBotAccessSettings`].
+    fn set_managed_bot_access_settings(
+        &self,
+        user_id: UserId,
+        is_access_restricted: bool,
+    ) -> Self::SetManagedBotAccessSettings;
+
+    type SetMyProfilePhoto: Request<Payload = SetMyProfilePhoto, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SetMyProfilePhoto`].
+    fn set_my_profile_photo(&self, photo: InputProfilePhoto) -> Self::SetMyProfilePhoto;
+
+    type RemoveMyProfilePhoto: Request<Payload = RemoveMyProfilePhoto, Err = Self::Err>;
+
+    /// For Telegram documentation see [`RemoveMyProfilePhoto`].
+    fn remove_my_profile_photo(&self) -> Self::RemoveMyProfilePhoto;
+
+    type GetUserGifts: Request<Payload = GetUserGifts, Err = Self::Err>;
+
+    /// For Telegram documentation see [`GetUserGifts`].
+    fn get_user_gifts(&self, user_id: UserId) -> Self::GetUserGifts;
+
+    type GetChatGifts: Request<Payload = GetChatGifts, Err = Self::Err>;
+
+    /// For Telegram documentation see [`GetChatGifts`].
+    fn get_chat_gifts<C>(&self, chat_id: C) -> Self::GetChatGifts
+    where
+        C: Into<Recipient>;
+
+    type RepostStory: Request<Payload = RepostStory, Err = Self::Err>;
+
+    /// For Telegram documentation see [`RepostStory`].
+    fn repost_story<F>(
+        &self,
+        business_connection_id: BusinessConnectionId,
+        from_chat_id: F,
+        from_story_id: StoryId,
+        active_period: Seconds,
+    ) -> Self::RepostStory
+    where
+        F: Into<ChatId>;
+
+    type SavePreparedKeyboardButton: Request<Payload = SavePreparedKeyboardButton, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SavePreparedKeyboardButton`].
+    fn save_prepared_keyboard_button(
+        &self,
+        user_id: UserId,
+        button: KeyboardButton,
+    ) -> Self::SavePreparedKeyboardButton;
+
+    type EditEphemeralMessageMedia: Request<Payload = EditEphemeralMessageMedia, Err = Self::Err>;
+
+    /// For Telegram documentation see [`EditEphemeralMessageMedia`].
+    fn edit_ephemeral_message_media<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+        media: InputMedia,
+    ) -> Self::EditEphemeralMessageMedia
+    where
+        C: Into<Recipient>;
+
+    type EditEphemeralMessageCaption: Request<
+        Payload = EditEphemeralMessageCaption,
+        Err = Self::Err,
+    >;
+
+    /// For Telegram documentation see [`EditEphemeralMessageCaption`].
+    fn edit_ephemeral_message_caption<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::EditEphemeralMessageCaption
+    where
+        C: Into<Recipient>;
+
+    type EditEphemeralMessageReplyMarkup: Request<
+        Payload = EditEphemeralMessageReplyMarkup,
+        Err = Self::Err,
+    >;
+
+    /// For Telegram documentation see [`EditEphemeralMessageReplyMarkup`].
+    fn edit_ephemeral_message_reply_markup<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::EditEphemeralMessageReplyMarkup
+    where
+        C: Into<Recipient>;
+
+    type DeleteEphemeralMessage: Request<Payload = DeleteEphemeralMessage, Err = Self::Err>;
+
+    /// For Telegram documentation see [`DeleteEphemeralMessage`].
+    fn delete_ephemeral_message<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::DeleteEphemeralMessage
+    where
+        C: Into<Recipient>;
+
+    type DeleteMessageReaction: Request<Payload = DeleteMessageReaction, Err = Self::Err>;
+
+    /// For Telegram documentation see [`DeleteMessageReaction`].
+    fn delete_message_reaction<C>(
+        &self,
+        chat_id: C,
+        message_id: MessageId,
+    ) -> Self::DeleteMessageReaction
+    where
+        C: Into<Recipient>;
+
+    type DeleteAllMessageReactions: Request<Payload = DeleteAllMessageReactions, Err = Self::Err>;
+
+    /// For Telegram documentation see [`DeleteAllMessageReactions`].
+    fn delete_all_message_reactions<C>(&self, chat_id: C) -> Self::DeleteAllMessageReactions
+    where
+        C: Into<Recipient>;
+
+    type EditEphemeralMessageText: Request<Payload = EditEphemeralMessageText, Err = Self::Err>;
+
+    /// For Telegram documentation see [`EditEphemeralMessageText`].
+    fn edit_ephemeral_message_text<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::EditEphemeralMessageText
+    where
+        C: Into<Recipient>;
+
+    type SendRichMessage: Request<Payload = SendRichMessage, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SendRichMessage`].
+    fn send_rich_message<C>(
+        &self,
+        chat_id: C,
+        rich_message: InputRichMessage,
+    ) -> Self::SendRichMessage
+    where
+        C: Into<Recipient>;
+
+    type SendRichMessageDraft: Request<Payload = SendRichMessageDraft, Err = Self::Err>;
+
+    /// For Telegram documentation see [`SendRichMessageDraft`].
+    fn send_rich_message_draft<C>(
+        &self,
+        chat_id: C,
+        draft_id: i64,
+        rich_message: InputRichMessage,
+    ) -> Self::SendRichMessageDraft
+    where
+        C: Into<ChatId>;
     // END BLOCK requester_methods
 }
 
@@ -1663,6 +1915,35 @@ macro_rules! fwd_deref {
 macro_rules! forward_all {
     ($body:ident, $ty:ident) => {
         requester_forward! {
+        edit_ephemeral_message_text,
+        send_rich_message,
+        send_rich_message_draft,
+
+        send_live_photo,
+        send_message_draft,
+        get_user_profile_audios,
+        set_chat_member_tag,
+        answer_chat_join_request_query,
+        send_chat_join_request_web_app,
+        get_user_personal_chat_messages,
+        answer_guest_query,
+        get_managed_bot_token,
+        replace_managed_bot_token,
+        get_managed_bot_access_settings,
+        set_managed_bot_access_settings,
+        set_my_profile_photo,
+        remove_my_profile_photo,
+        get_user_gifts,
+        get_chat_gifts,
+        repost_story,
+        save_prepared_keyboard_button,
+        edit_ephemeral_message_media,
+        edit_ephemeral_message_caption,
+        edit_ephemeral_message_reply_markup,
+        delete_ephemeral_message,
+        delete_message_reaction,
+        delete_all_message_reactions,
+
             get_me,
             log_out,
             close,
@@ -1973,11 +2254,11 @@ fn codegen_requester_methods() {
                 .flat_map(|p| match convert_for(&p.ty) {
                     Convert::Id(_) => None,
                     Convert::Into(ty) => {
-                        Some(format!("{}: Into<{}>", &to_uppercase(prefixes[&*p.name]), ty))
+                        Some(format!("{}: Into<{}>", to_uppercase(prefixes[&*p.name]), ty))
                     }
                     Convert::Collect(ty) => Some(format!(
                         "{}: IntoIterator<Item = {}>",
-                        &to_uppercase(prefixes[&*p.name]),
+                        to_uppercase(prefixes[&*p.name]),
                         ty
                     )),
                 })

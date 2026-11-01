@@ -8,6 +8,7 @@ use crate::types::{
 };
 
 impl_payload! {
+    @[multipart = media]
     /// Use this method to send paid media. On success, the sent [`Message`] is returned.
     ///
     /// [`Message`]: crate::types::Message

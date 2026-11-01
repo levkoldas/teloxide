@@ -40,7 +40,7 @@
 //! [github]: https://github.com/WaffleLapkin/tg-methods-schema
 
 Schema(
-    api_version: ApiVersion(ver: "9.2", date: "August 15, 2025"),
+    api_version: ApiVersion(ver: "10.3", date: "August 24, 2026"),
     methods: [
         Method(
             names: ("getUpdates", "GetUpdates", "get_updates"),
@@ -226,6 +226,11 @@ Schema(
             tg_category: "Available methods",
             params: [
                 Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
+                Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
                     descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent"),
@@ -333,7 +338,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -372,7 +377,7 @@ Schema(
                     ty: Option(RawTy("SuggestedPostParameters")),
                     descr: Doc(md: "An object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined."),
                 ),
-            ],
+            Param(name: "message_effect_id", ty: Option(RawTy("EffectId")), descr: Doc(md: "Unique identifier of the message effect to be added to the message; only available when forwarding to private chats")),],
         ),
         Method(
             names: ("forwardMessages", "ForwardMessages", "forward_messages"),
@@ -393,7 +398,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -447,7 +452,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -530,7 +535,7 @@ Schema(
                         },
                     ),
                 ),
-            ],
+            Param(name: "message_effect_id", ty: Option(RawTy("EffectId")), descr: Doc(md: "Unique identifier of the message effect to be added to the message; only available when copying to private chats")),],
         ),
         Method(
             names: ("copyMessages", "CopyMessages", "copy_messages"),
@@ -555,7 +560,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -601,6 +606,11 @@ Schema(
             tg_doc: "https://core.telegram.org/bots/api#sendphoto",
             tg_category: "Available methods",
             params: [
+                Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
                 Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
@@ -716,6 +726,11 @@ Schema(
             tg_doc: "https://core.telegram.org/bots/api#sendaudio",
             tg_category: "Available methods",
             params: [
+                Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
                 Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
@@ -842,6 +857,11 @@ Schema(
             tg_category: "Available methods",
             params: [
                 Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
+                Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
                     descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent"),
@@ -959,6 +979,11 @@ Schema(
             tg_doc: "https://core.telegram.org/bots/api#sendvideo",
             tg_category: "Available methods",
             params: [
+                Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
                 Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
@@ -1114,6 +1139,11 @@ Schema(
             tg_category: "Available methods",
             params: [
                 Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
+                Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
                     descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent"),
@@ -1253,6 +1283,11 @@ Schema(
             tg_category: "Available methods",
             params: [
                 Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
+                Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
                     descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent"),
@@ -1362,6 +1397,11 @@ Schema(
             tg_doc: "https://core.telegram.org/bots/api#sendvideonote",
             tg_category: "Available methods",
             params: [
+                Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
                 Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
@@ -1588,7 +1628,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -1639,6 +1679,11 @@ Schema(
             tg_doc: "https://core.telegram.org/bots/api#sendlocation",
             tg_category: "Available methods",
             params: [
+                Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
                 Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
@@ -1863,7 +1908,12 @@ Schema(
                         }
                     ),
                 ),
-            ],
+            Param(
+                    name: "live_period",
+                    ty: Option(RawTy("LivePeriod")),
+                    descr: Doc(md: "New period in seconds during which the location can be updated, starting from the message send date. If 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not exceed the current live_period by more than a day, and the live location expiration date must remain within the next 90 days. If not specified, then live_period remains unchanged"),
+                ),
+],
             sibling: Some("editMessageLiveLocation"),
         ),
         Method(
@@ -1959,7 +2009,7 @@ Schema(
                 ),
                 Param(
                     name: "chat_id",
-                    ty: RawTy("ChatId"),
+                    ty: RawTy("Recipient"),
                     descr: Doc(md: "Unique identifier for the target chat")
                 ),
                 Param(
@@ -1990,6 +2040,11 @@ Schema(
             tg_category: "Available methods",
             params: [
                 Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
+                Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
                     descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent"),
@@ -2003,7 +2058,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -2109,6 +2164,11 @@ Schema(
             tg_category: "Available methods",
             params: [
                 Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
+                Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
                     descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent"),
@@ -2122,7 +2182,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -2243,7 +2303,7 @@ Schema(
                 Param(
                     name: "options",
                     ty: ArrayOf(RawTy("InputPollOption")),
-                    descr: Doc(md: "A JSON-serialized list of 2-10 answer options"),
+                    descr: Doc(md: "A JSON-serialized list of 1-12 answer options"),
                 ),
                 Param(
                     name: "is_anonymous",
@@ -2258,13 +2318,9 @@ Schema(
                 Param(
                     name: "allows_multiple_answers",
                     ty: Option(bool),
-                    descr: Doc(md: "True, if the poll allows multiple answers, ignored for polls in quiz mode, defaults to False")
+                    descr: Doc(md: "Pass True if the poll allows multiple answers, defaults to False")
                 ),
-                Param(
-                    name: "correct_option_id",
-                    ty: Option(u8),
-                    descr: Doc(md: "0-based identifier of the correct answer option, required for polls in quiz mode")
-                ),
+
                 Param(
                     name: "explanation",
                     ty: Option(String),
@@ -2285,13 +2341,13 @@ Schema(
                 ),
                 Param(
                     name: "open_period",
-                    ty: Option(u16),
-                    descr: Doc(md: "Amount of time in seconds the poll will be active after creation, 5-600. Can't be used together with close_date.")
+                    ty: Option(u32),
+                    descr: Doc(md: "Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with close_date.")
                 ),
                 Param(
                     name: "close_date",
                     ty: Option(u64),
-                    descr: Doc(md: "Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 600 seconds in the future. Can't be used together with open_period.")
+                    descr: Doc(md: "Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 2628000 seconds in the future. Can't be used together with open_period.")
                 ),
                 Param(
                     name: "is_closed",
@@ -2337,7 +2393,7 @@ Schema(
                         }
                     ),
                 ),
-            ],
+            Param(name: "allows_revoting", ty: Option(bool), descr: Doc(md: "Pass True if the poll allows to change chosen answer options, defaults to False for quizzes and to True for regular polls")),Param(name: "shuffle_options", ty: Option(bool), descr: Doc(md: "Pass True if the poll options must be shown in random order")),Param(name: "allow_adding_options", ty: Option(bool), descr: Doc(md: "Pass True if answer options can be added to the poll after creation; not supported for anonymous polls and quizzes")),Param(name: "hide_results_until_closes", ty: Option(bool), descr: Doc(md: "Pass True if poll results must be shown only after the poll closes")),Param(name: "members_only", ty: Option(bool), descr: Doc(md: "Pass True if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only")),Param(name: "country_codes", ty: Option(ArrayOf(String)), descr: Doc(md: "A JSON-serialized list of 0-12 two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users can vote in the poll; for channel chats only. Use “FT” as a country code to allow users with anonymous numbers to vote. If omitted or empty, then users from any country can participate in the poll.")),Param(name: "correct_option_ids", ty: Option(ArrayOf(u32)), descr: Doc(md: "A JSON-serialized list of monotonically increasing 0-based identifiers of the correct answer options, required for polls in quiz mode")),Param(name: "explanation_media", ty: Option(RawTy("InputPollMedia")), descr: Doc(md: "Media added to the quiz explanation")),Param(name: "description", ty: Option(String), descr: Doc(md: "Description of the poll to be sent, 0-1024 characters after entities parsing")),Param(name: "description_parse_mode", ty: Option(RawTy("ParseMode")), descr: Doc(md: "Mode for parsing entities in the poll description. See formatting options for more details.")),Param(name: "description_entities", ty: Option(ArrayOf(RawTy("MessageEntity"))), descr: Doc(md: "A JSON-serialized list of special entities that appear in the poll description, which can be specified instead of description_parse_mode")),Param(name: "media", ty: Option(RawTy("InputPollMedia")), descr: Doc(md: "Media added to the poll description")),],
         ),
         Method(
             names: ("sendChecklist", "SendChecklist", "send_checklist"),
@@ -2356,7 +2412,7 @@ Schema(
                 ),
                 Param(
                     name: "chat_id",
-                    ty: RawTy("ChatId"),
+                    ty: RawTy("Recipient"),
                     descr: Doc(md: "Unique identifier for the target chat")
                 ),
                 Param(
@@ -2415,7 +2471,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -2842,7 +2898,7 @@ Schema(
                     ty: Option(bool),
                     descr: Doc(md: "Pass True if the administrator can manage direct messages within the channel and decline suggested posts; for channels only")
                 ),
-            ],
+            Param(name: "can_manage_tags", ty: Option(bool), descr: Doc(md: "Pass True if the administrator can edit the tags of regular members; for groups and supergroups only")),Param(name: "can_send_welcome_messages", ty: Option(bool), descr: Doc(md: "Pass True if the administrator can manage chat welcome messages or directly send them in the case of bots")),],
         ),
         Method(
             names: ("setChatAdministratorCustomTitle", "SetChatAdministratorCustomTitle", "set_chat_administrator_custom_title"),
@@ -3335,7 +3391,7 @@ Schema(
                     ty: RawTy("Recipient"),
                     descr: Doc(md: "Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)")
                 ),
-            ],
+            Param(name: "return_bots", ty: Option(bool), descr: Doc(md: "Pass True to additionally receive all bots that are administrators of the chat. By default, bots other than the current bot are omitted.")),],
         ),
         Method(
             names: ("getChatMemberCount", "GetChatMemberCount", "get_chat_member_count"),
@@ -4109,7 +4165,7 @@ Schema(
                 ),
                 Param(
                     name: "text",
-                    ty: String,
+                    ty: Option(String),
                     descr: Doc(md: "New text of the message, 1-4096 characters after entities parsing")
                 ),
                 Param(
@@ -4143,7 +4199,7 @@ Schema(
                         md_links: {"inline keyboard": "https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating"},
                     ),
                 ),
-            ],
+            Param(name: "rich_message", ty: Option(RawTy("InputRichMessage")), descr: Doc(md: "New rich content of the message; required if text isn't specified. Direct upload of new files and explicit upload of files by a URL isn't supported when an inline message is edited.")),],
         ),
         Method(
             names: ("editMessageTextInline", "EditMessageTextInline", "edit_message_text_inline"),
@@ -4163,7 +4219,7 @@ Schema(
                 ),
                 Param(
                     name: "text",
-                    ty: String,
+                    ty: Option(String),
                     descr: Doc(md: "New text of the message, 1-4096 characters after entities parsing")
                 ),
                 Param(
@@ -4185,9 +4241,9 @@ Schema(
                     descr: Doc(md: "List of special entities that appear in message text, which can be specified instead of _parse\\_mode_"),
                 ),
                 Param(
-                    name: "disable_web_page_preview",
-                    ty: Option(bool),
-                    descr: Doc(md: "Disables link previews for links in this message")
+                    name: "link_preview_options",
+                    ty: Option(RawTy("LinkPreviewOptions")),
+                    descr: Doc(md: "Link preview generation options for the message"),
                 ),
                 Param(
                     name: "reply_markup",
@@ -4197,7 +4253,7 @@ Schema(
                         md_links: {"inline keyboard": "https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating"}
                     ),
                 ),
-            ],
+            Param(name: "rich_message", ty: Option(RawTy("InputRichMessage")), descr: Doc(md: "New rich content of the message; required if text isn't specified. Direct upload of new files and explicit upload of files by a URL isn't supported when an inline message is edited.")),],
         ),
         Method(
             names: ("editMessageCaption", "EditMessageCaption", "edit_message_caption"),
@@ -4300,7 +4356,12 @@ Schema(
                         md_links: {"inline keyboard": "https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating"}
                     ),
                 ),
-            ],
+            Param(
+                    name: "show_caption_above_media",
+                    ty: Option(bool),
+                    descr: Doc(md: "Pass True, if the caption must be shown above the message media. Supported only for animation, photo and video messages"),
+                ),
+],
         ),
         Method(
             names: ("editMessageMedia", "EditMessageMedia", "edit_message_media"),
@@ -4565,6 +4626,11 @@ Schema(
             tg_doc: "https://core.telegram.org/bots/api#sendsticker",
             tg_category: "Stickers",
             params: [
+                Param(
+                    name: "ephemeral_message_parameters",
+                    ty: Option(RawTy("EphemeralMessageParameters")),
+                    descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send"),
+                ),
                 Param(
                     name: "business_connection_id",
                     ty: Option(RawTy("BusinessConnectionId")),
@@ -5466,11 +5532,7 @@ Schema(
                     ty: Option(bool),
                     descr: Doc(md: "Pass _true_ to exclude gifts that can be purchased an unlimited number of times")
                 ),
-                Param(
-                    name: "exclude_limited",
-                    ty: Option(bool),
-                    descr: Doc(md: "Pass _true_ to exclude gifts that can be purchased a limited number of times")
-                ),
+
                 Param(
                     name: "exclude_unique",
                     ty: Option(bool),
@@ -5491,7 +5553,7 @@ Schema(
                     ty: Option(u8),
                     descr: Doc(md: "The maximum number of gifts to be returned; 1-100. Defaults to 100")
                 ),
-            ]
+            Param(name: "exclude_limited_upgradable", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased a limited number of times and can be upgraded to unique")),Param(name: "exclude_limited_non_upgradable", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased a limited number of times and can't be upgraded to unique")),Param(name: "exclude_from_blockchain", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that were assigned from the TON blockchain and can't be resold or transferred in Telegram")),]
         ),
         Method(
             names: ("convertGiftToStars", "ConvertGiftToStars", "convert_gift_to_stars"),
@@ -5726,7 +5788,7 @@ Schema(
                     name: "message_thread_id",
                     ty: Option(RawTy("ThreadId")),
                     descr: Doc(md: "Unique identifier for the target message thread (topic) of the forum; for forum supergroups only"),
-                ), 
+                ),
                 Param(
                     name: "direct_messages_topic_id",
                     ty: Option(RawTy("TopicId")),
@@ -6206,7 +6268,7 @@ Schema(
                 ),
                 Param(
                     name: "chat_id",
-                    ty: RawTy("ChatId"),
+                    ty: RawTy("Recipient"),
                     descr: Doc(md: "Unique identifier for the target chat"),
                 ),
                 Param(
@@ -6289,7 +6351,7 @@ Schema(
                 ),
                 Param(
                     name: "chat_id",
-                    ty: u32,
+                    ty: RawTy("ChatId"),
                     descr: Doc(md: "Unique identifier for the target chat")
                 ),
                 Param(
@@ -6356,6 +6418,329 @@ Schema(
                     descr: Doc(md: "Target message")
                 )
             ],
+        ),
+
+        Method(
+            names: ("sendLivePhoto", "SendLivePhoto", "send_live_photo"),
+            return_ty: RawTy("Message"),
+            doc: Doc(md: "Use this method to send live photos. On success, the sent Message is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#sendlivephoto",
+            tg_category: "Available methods",
+            params: [Param(name: "business_connection_id", ty: Option(RawTy("BusinessConnectionId")), descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent")),
+Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target channel (in the format @channelusername)")),
+Param(name: "message_thread_id", ty: Option(RawTy("ThreadId")), descr: Doc(md: "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only")),
+Param(name: "direct_messages_topic_id", ty: Option(RawTy("TopicId")), descr: Doc(md: "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat")),
+Param(name: "ephemeral_message_parameters", ty: Option(RawTy("EphemeralMessageParameters")), descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send")),
+Param(name: "live_photo", ty: RawTy("InputFile"), descr: Doc(md: "Live photo video to send. The video must be no longer than 10 seconds and must not exceed 10 MB in size. Pass a file_id as String to send a video that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files ». Sending live photos by a URL is currently unsupported.")),
+Param(name: "photo", ty: RawTy("InputFile"), descr: Doc(md: "The static photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files ». Sending live photos by a URL is currently unsupported.")),
+Param(name: "caption", ty: Option(String), descr: Doc(md: "Video caption (may also be used when resending videos by file_id), 0-1024 characters after entities parsing")),
+Param(name: "parse_mode", ty: Option(RawTy("ParseMode")), descr: Doc(md: "Mode for parsing entities in the video caption. See formatting options for more details.")),
+Param(name: "caption_entities", ty: Option(ArrayOf(RawTy("MessageEntity"))), descr: Doc(md: "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode")),
+Param(name: "show_caption_above_media", ty: Option(bool), descr: Doc(md: "Pass True if the caption must be shown above the message media")),
+Param(name: "has_spoiler", ty: Option(bool), descr: Doc(md: "Pass True if the video needs to be covered with a spoiler animation")),
+Param(name: "disable_notification", ty: Option(bool), descr: Doc(md: "Sends the message silently. Users will receive a notification with no sound.")),
+Param(name: "protect_content", ty: Option(bool), descr: Doc(md: "Protects the contents of the sent message from forwarding and saving")),
+Param(name: "allow_paid_broadcast", ty: Option(bool), descr: Doc(md: "Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.")),
+Param(name: "message_effect_id", ty: Option(RawTy("EffectId")), descr: Doc(md: "Unique identifier of the message effect to be added to the message; for private chats only")),
+Param(name: "suggested_post_parameters", ty: Option(RawTy("SuggestedPostParameters")), descr: Doc(md: "A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.")),
+Param(name: "reply_parameters", ty: Option(RawTy("ReplyParameters")), descr: Doc(md: "Description of the message to reply to")),
+Param(name: "reply_markup", ty: Option(RawTy("ReplyMarkup")), descr: Doc(md: "Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.")),],
+        ),
+        Method(
+            names: ("sendMessageDraft", "SendMessageDraft", "send_message_draft"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendMessage with the complete message to persist it in the user's chat. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#sendmessagedraft",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("ChatId"), descr: Doc(md: "Unique identifier for the target private chat")),
+Param(name: "message_thread_id", ty: Option(RawTy("ThreadId")), descr: Doc(md: "Unique identifier for the target message thread")),
+Param(name: "draft_id", ty: i64, descr: Doc(md: "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation.")),
+Param(name: "text", ty: Option(String), descr: Doc(md: "Text of the message to be sent, 0-4096 characters after entities parsing. Pass an empty text to show a “Thinking…” placeholder.")),
+Param(name: "parse_mode", ty: Option(RawTy("ParseMode")), descr: Doc(md: "Mode for parsing entities in the message text. See formatting options for more details.")),
+Param(name: "entities", ty: Option(ArrayOf(RawTy("MessageEntity"))), descr: Doc(md: "A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode")),
+Param(name: "can_stop", ty: Option(bool), descr: Doc(md: "Pass True to show the user a button to stop further drafts. The bot will receive an Update “stopped_message_generation” if the user presses the button.")),
+Param(name: "keep_on_stop", ty: Option(bool), descr: Doc(md: "Pass True to keep the draft in the chat when the button is pressed. The draft will still disappear after a short time or if the bot sends a message. To fully preserve the partial draft, the bot should send it as a new message.")),],
+        ),
+        Method(
+            names: ("getUserProfileAudios", "GetUserProfileAudios", "get_user_profile_audios"),
+            return_ty: RawTy("UserProfileAudios"),
+            doc: Doc(md: "Use this method to get a list of profile audios for a user. Returns a UserProfileAudios object."),
+            tg_doc: "https://core.telegram.org/bots/api#getuserprofileaudios",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "Unique identifier of the target user")),
+Param(name: "offset", ty: Option(u32), descr: Doc(md: "Sequential number of the first audio to be returned. By default, all audios are returned.")),
+Param(name: "limit", ty: Option(u8), descr: Doc(md: "Limits the number of audios to be retrieved. Values between 1-100 are accepted. Defaults to 100.")),],
+        ),
+        Method(
+            names: ("setChatMemberTag", "SetChatMemberTag", "set_chat_member_tag"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to set a tag for a regular member in a group or a supergroup. The bot must be an administrator in the chat for this to work and must have the can_manage_tags administrator right. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#setchatmembertag",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "Unique identifier of the target user")),
+Param(name: "tag", ty: Option(String), descr: Doc(md: "New tag for the member; 0-16 characters, emoji are not allowed")),],
+        ),
+        Method(
+            names: ("answerChatJoinRequestQuery", "AnswerChatJoinRequestQuery", "answer_chat_join_request_query"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to process a received chat join request query. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#answerchatjoinrequestquery",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_join_request_query_id", ty: String, descr: Doc(md: "Unique identifier of the join request query")),
+Param(name: "result", ty: String, descr: Doc(md: "Result of the query. Must be either “approve” to allow the user to join the chat, “decline” to disallow the user to join the chat, or “queue” to leave the decision to other administrators.")),],
+        ),
+        Method(
+            names: ("sendChatJoinRequestWebApp", "SendChatJoinRequestWebApp", "send_chat_join_request_web_app"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Call answerChatJoinRequestQuery to resolve the join request query based on the user interaction with the Mini App. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#sendchatjoinrequestwebapp",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_join_request_query_id", ty: String, descr: Doc(md: "Unique identifier of the join request query")),
+Param(name: "web_app_url", ty: String, descr: Doc(md: "An HTTPS URL of a Web App to be opened with additional data as specified in Initializing Web Apps")),],
+        ),
+        Method(
+            names: ("getUserPersonalChatMessages", "GetUserPersonalChatMessages", "get_user_personal_chat_messages"),
+            return_ty: ArrayOf(RawTy("Message")),
+            doc: Doc(md: "Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an Array of Message objects is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#getuserpersonalchatmessages",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "Unique identifier for the target user")),
+Param(name: "limit", ty: u8, descr: Doc(md: "The maximum number of messages to return; 1-20")),],
+        ),
+        Method(
+            names: ("answerGuestQuery", "AnswerGuestQuery", "answer_guest_query"),
+            return_ty: RawTy("SentGuestMessage"),
+            doc: Doc(md: "Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#answerguestquery",
+            tg_category: "Available methods",
+            params: [Param(name: "guest_query_id", ty: String, descr: Doc(md: "Unique identifier for the query to be answered")),
+Param(name: "result", ty: RawTy("InlineQueryResult"), descr: Doc(md: "A JSON-serialized object describing the message to be sent")),],
+        ),
+        Method(
+            names: ("getManagedBotToken", "GetManagedBotToken", "get_managed_bot_token"),
+            return_ty: String,
+            doc: Doc(md: "Use this method to get the token of a managed bot. Returns the token as String on success."),
+            tg_doc: "https://core.telegram.org/bots/api#getmanagedbottoken",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "User identifier of the managed bot whose token will be returned")),],
+        ),
+        Method(
+            names: ("replaceManagedBotToken", "ReplaceManagedBotToken", "replace_managed_bot_token"),
+            return_ty: String,
+            doc: Doc(md: "Use this method to revoke the current token of a managed bot and generate a new one. Returns the new token as String on success."),
+            tg_doc: "https://core.telegram.org/bots/api#replacemanagedbottoken",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "User identifier of the managed bot whose token will be replaced")),],
+        ),
+        Method(
+            names: ("getManagedBotAccessSettings", "GetManagedBotAccessSettings", "get_managed_bot_access_settings"),
+            return_ty: RawTy("BotAccessSettings"),
+            doc: Doc(md: "Use this method to get the access settings of a managed bot. Returns a BotAccessSettings object on success."),
+            tg_doc: "https://core.telegram.org/bots/api#getmanagedbotaccesssettings",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "User identifier of the managed bot whose access settings will be returned")),],
+        ),
+        Method(
+            names: ("setManagedBotAccessSettings", "SetManagedBotAccessSettings", "set_managed_bot_access_settings"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to change the access settings of a managed bot. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#setmanagedbotaccesssettings",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "User identifier of the managed bot whose access settings will be changed")),
+Param(name: "is_access_restricted", ty: bool, descr: Doc(md: "Pass True if only selected users can access the bot. The bot's owner can always access it.")),
+Param(name: "added_user_ids", ty: Option(ArrayOf(RawTy("UserId"))), descr: Doc(md: "A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if is_access_restricted is False.")),],
+        ),
+        Method(
+            names: ("setMyProfilePhoto", "SetMyProfilePhoto", "set_my_profile_photo"),
+            return_ty: True,
+            doc: Doc(md: "Changes the profile photo of the bot. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#setmyprofilephoto",
+            tg_category: "Available methods",
+            params: [Param(name: "photo", ty: RawTy("InputProfilePhoto"), descr: Doc(md: "The new profile photo to set")),],
+        ),
+        Method(
+            names: ("removeMyProfilePhoto", "RemoveMyProfilePhoto", "remove_my_profile_photo"),
+            return_ty: True,
+            doc: Doc(md: "Removes the profile photo of the bot. Requires no parameters. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#removemyprofilephoto",
+            tg_category: "Available methods",
+            params: [],
+        ),
+        Method(
+            names: ("getUserGifts", "GetUserGifts", "get_user_gifts"),
+            return_ty: RawTy("OwnedGifts"),
+            doc: Doc(md: "Returns the gifts owned and hosted by a user. Returns OwnedGifts on success."),
+            tg_doc: "https://core.telegram.org/bots/api#getusergifts",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "Unique identifier of the user")),
+Param(name: "exclude_unlimited", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased an unlimited number of times")),
+Param(name: "exclude_limited_upgradable", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased a limited number of times and can be upgraded to unique")),
+Param(name: "exclude_limited_non_upgradable", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased a limited number of times and can't be upgraded to unique")),
+Param(name: "exclude_from_blockchain", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that were assigned from the TON blockchain and can't be resold or transferred in Telegram")),
+Param(name: "exclude_unique", ty: Option(bool), descr: Doc(md: "Pass True to exclude unique gifts")),
+Param(name: "sort_by_price", ty: Option(bool), descr: Doc(md: "Pass True to sort results by gift price instead of send date. Sorting is applied before pagination.")),
+Param(name: "offset", ty: Option(String), descr: Doc(md: "Offset of the first entry to return as received from the previous request; use an empty string to get the first chunk of results")),
+Param(name: "limit", ty: Option(u8), descr: Doc(md: "The maximum number of gifts to be returned; 1-100. Defaults to 100.")),],
+        ),
+        Method(
+            names: ("getChatGifts", "GetChatGifts", "get_chat_gifts"),
+            return_ty: RawTy("OwnedGifts"),
+            doc: Doc(md: "Returns the gifts owned by a chat. Returns OwnedGifts on success."),
+            tg_doc: "https://core.telegram.org/bots/api#getchatgifts",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target channel in the format @username")),
+Param(name: "exclude_unsaved", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that aren't saved to the chat's profile page. Always True, unless the bot has the can_post_messages administrator right in the channel.")),
+Param(name: "exclude_saved", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that are saved to the chat's profile page. Always False, unless the bot has the can_post_messages administrator right in the channel.")),
+Param(name: "exclude_unlimited", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased an unlimited number of times")),
+Param(name: "exclude_limited_upgradable", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased a limited number of times and can be upgraded to unique")),
+Param(name: "exclude_limited_non_upgradable", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that can be purchased a limited number of times and can't be upgraded to unique")),
+Param(name: "exclude_from_blockchain", ty: Option(bool), descr: Doc(md: "Pass True to exclude gifts that were assigned from the TON blockchain and can't be resold or transferred in Telegram")),
+Param(name: "exclude_unique", ty: Option(bool), descr: Doc(md: "Pass True to exclude unique gifts")),
+Param(name: "sort_by_price", ty: Option(bool), descr: Doc(md: "Pass True to sort results by gift price instead of send date. Sorting is applied before pagination.")),
+Param(name: "offset", ty: Option(String), descr: Doc(md: "Offset of the first entry to return as received from the previous request; use an empty string to get the first chunk of results")),
+Param(name: "limit", ty: Option(u8), descr: Doc(md: "The maximum number of gifts to be returned; 1-100. Defaults to 100.")),],
+        ),
+        Method(
+            names: ("repostStory", "RepostStory", "repost_story"),
+            return_ty: RawTy("Story"),
+            doc: Doc(md: "Reposts a story on behalf of a business account from another business account. Both business accounts must be managed by the same bot, and the story on the source account must have been posted (or reposted) by the bot. Requires the can_manage_stories business bot right for both business accounts. Returns Story on success."),
+            tg_doc: "https://core.telegram.org/bots/api#repoststory",
+            tg_category: "Available methods",
+            params: [Param(name: "business_connection_id", ty: RawTy("BusinessConnectionId"), descr: Doc(md: "Unique identifier of the business connection")),
+Param(name: "from_chat_id", ty: RawTy("ChatId"), descr: Doc(md: "Unique identifier of the chat which posted the story that should be reposted")),
+Param(name: "from_story_id", ty: RawTy("StoryId"), descr: Doc(md: "Unique identifier of the story that should be reposted")),
+Param(name: "active_period", ty: RawTy("Seconds"), descr: Doc(md: "Period after which the story is moved to the archive, in seconds; must be one of 6 * 3600, 12 * 3600, 86400, or 2 * 86400")),
+Param(name: "post_to_chat_page", ty: Option(bool), descr: Doc(md: "Pass True to keep the story accessible after it expires")),
+Param(name: "protect_content", ty: Option(bool), descr: Doc(md: "Pass True if the content of the story must be protected from forwarding and screenshotting")),],
+        ),
+        Method(
+            names: ("savePreparedKeyboardButton", "SavePreparedKeyboardButton", "save_prepared_keyboard_button"),
+            return_ty: RawTy("PreparedKeyboardButton"),
+            doc: Doc(md: "Stores a keyboard button that can be used by a user within a Mini App. Returns a PreparedKeyboardButton object."),
+            tg_doc: "https://core.telegram.org/bots/api#savepreparedkeyboardbutton",
+            tg_category: "Available methods",
+            params: [Param(name: "user_id", ty: RawTy("UserId"), descr: Doc(md: "Unique identifier of the target user that can use the button")),
+Param(name: "button", ty: RawTy("KeyboardButton"), descr: Doc(md: "A JSON-serialized object describing the button to be saved. The button must be of the type request_users, request_chat, or request_managed_bot.")),],
+        ),
+        Method(
+            names: ("editEphemeralMessageMedia", "EditEphemeralMessageMedia", "edit_ephemeral_message_media"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to edit the media of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#editephemeralmessagemedia",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "receiver_user_id", ty: RawTy("UserId"), descr: Doc(md: "Identifier of the user who received the message")),
+Param(name: "ephemeral_message_id", ty: i64, descr: Doc(md: "Identifier of the ephemeral message to edit")),
+Param(name: "media", ty: RawTy("InputMedia"), descr: Doc(md: "A JSON-serialized object for the new media content of the message")),
+Param(name: "reply_markup", ty: Option(RawTy("InlineKeyboardMarkup")), descr: Doc(md: "A JSON-serialized object for an inline keyboard")),],
+        ),
+        Method(
+            names: ("editEphemeralMessageCaption", "EditEphemeralMessageCaption", "edit_ephemeral_message_caption"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to edit the caption of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#editephemeralmessagecaption",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "receiver_user_id", ty: RawTy("UserId"), descr: Doc(md: "Identifier of the user who received the message")),
+Param(name: "ephemeral_message_id", ty: i64, descr: Doc(md: "Identifier of the ephemeral message to edit")),
+Param(name: "caption", ty: Option(String), descr: Doc(md: "New caption of the message, 0-1024 characters after entities parsing")),
+Param(name: "parse_mode", ty: Option(RawTy("ParseMode")), descr: Doc(md: "Mode for parsing entities in the message caption. See formatting options for more details.")),
+Param(name: "caption_entities", ty: Option(ArrayOf(RawTy("MessageEntity"))), descr: Doc(md: "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode")),
+Param(name: "show_caption_above_media", ty: Option(bool), descr: Doc(md: "Pass True if the caption must be shown above the message media. Supported only for animation, photo and video messages.")),
+Param(name: "reply_markup", ty: Option(RawTy("InlineKeyboardMarkup")), descr: Doc(md: "A JSON-serialized object for an inline keyboard")),],
+        ),
+        Method(
+            names: ("editEphemeralMessageReplyMarkup", "EditEphemeralMessageReplyMarkup", "edit_ephemeral_message_reply_markup"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to edit only the reply markup of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#editephemeralmessagereplymarkup",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "receiver_user_id", ty: RawTy("UserId"), descr: Doc(md: "Identifier of the user who received the message")),
+Param(name: "ephemeral_message_id", ty: i64, descr: Doc(md: "Identifier of the ephemeral message to edit")),
+Param(name: "reply_markup", ty: Option(RawTy("InlineKeyboardMarkup")), descr: Doc(md: "A JSON-serialized object for an inline keyboard")),],
+        ),
+        Method(
+            names: ("deleteEphemeralMessage", "DeleteEphemeralMessage", "delete_ephemeral_message"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to delete an ephemeral message. Note that it is not guaranteed that the user will receive the message deletion event, especially if they are offline. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#deleteephemeralmessage",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "receiver_user_id", ty: RawTy("UserId"), descr: Doc(md: "Identifier of the user who received the message")),
+Param(name: "ephemeral_message_id", ty: i64, descr: Doc(md: "Identifier of the ephemeral message to delete")),],
+        ),
+        Method(
+            names: ("deleteMessageReaction", "DeleteMessageReaction", "delete_message_reaction"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to remove a reaction from a message in a group or a supergroup chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#deletemessagereaction",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "message_id", ty: RawTy("MessageId"), descr: Doc(md: "Identifier of the target message")),
+Param(name: "user_id", ty: Option(RawTy("UserId")), descr: Doc(md: "Identifier of the user whose reaction will be removed, if the reaction was added by a user")),
+Param(name: "actor_chat_id", ty: Option(RawTy("ChatId")), descr: Doc(md: "Identifier of the chat whose reaction will be removed, if the reaction was added by a chat")),],
+        ),
+        Method(
+            names: ("deleteAllMessageReactions", "DeleteAllMessageReactions", "delete_all_message_reactions"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#deleteallmessagereactions",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "user_id", ty: Option(RawTy("UserId")), descr: Doc(md: "Identifier of the user whose reactions will be removed, if the reactions were added by a user")),
+Param(name: "actor_chat_id", ty: Option(RawTy("ChatId")), descr: Doc(md: "Identifier of the chat whose reactions will be removed, if the reactions were added by a chat")),],
+        ),
+
+        Method(
+            names: ("editEphemeralMessageText", "EditEphemeralMessageText", "edit_ephemeral_message_text"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to edit an ephemeral text or rich message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#editephemeralmessagetext",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target supergroup in the format @username")),
+Param(name: "receiver_user_id", ty: RawTy("UserId"), descr: Doc(md: "Identifier of the user who received the message")),
+Param(name: "ephemeral_message_id", ty: i64, descr: Doc(md: "Identifier of the ephemeral message to edit")),
+Param(name: "text", ty: Option(String), descr: Doc(md: "New text of the message, 1-4096 characters after entity parsing; required if rich_message isn't specified")),
+Param(name: "parse_mode", ty: Option(RawTy("ParseMode")), descr: Doc(md: "Mode for parsing entities in the message text. See formatting options for more details.")),
+Param(name: "entities", ty: Option(ArrayOf(RawTy("MessageEntity"))), descr: Doc(md: "A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode")),
+Param(name: "rich_message", ty: Option(RawTy("InputRichMessage")), descr: Doc(md: "New rich content of the message; required if text isn't specified")),
+Param(name: "link_preview_options", ty: Option(RawTy("LinkPreviewOptions")), descr: Doc(md: "Link preview generation options for the message")),
+Param(name: "reply_markup", ty: Option(RawTy("InlineKeyboardMarkup")), descr: Doc(md: "A JSON-serialized object for an inline keyboard")),],
+        ),
+        Method(
+            names: ("sendRichMessage", "SendRichMessage", "send_rich_message"),
+            return_ty: RawTy("Message"),
+            doc: Doc(md: "Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned."),
+            tg_doc: "https://core.telegram.org/bots/api#sendrichmessage",
+            tg_category: "Available methods",
+            params: [Param(name: "business_connection_id", ty: Option(RawTy("BusinessConnectionId")), descr: Doc(md: "Unique identifier of the business connection on behalf of which the message will be sent. Bot can send rich messages on behalf of a business account only if the corresponding user can send rich messages.")),
+Param(name: "chat_id", ty: RawTy("Recipient"), descr: Doc(md: "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username")),
+Param(name: "message_thread_id", ty: Option(RawTy("ThreadId")), descr: Doc(md: "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only")),
+Param(name: "direct_messages_topic_id", ty: Option(RawTy("TopicId")), descr: Doc(md: "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat")),
+Param(name: "ephemeral_message_parameters", ty: Option(RawTy("EphemeralMessageParameters")), descr: Doc(md: "A JSON-serialized object containing the parameters of the ephemeral message to send")),
+Param(name: "rich_message", ty: RawTy("InputRichMessage"), descr: Doc(md: "The message to be sent")),
+Param(name: "disable_notification", ty: Option(bool), descr: Doc(md: "Sends the message silently. Users will receive a notification with no sound.")),
+Param(name: "protect_content", ty: Option(bool), descr: Doc(md: "Protects the contents of the sent message from forwarding and saving")),
+Param(name: "allow_paid_broadcast", ty: Option(bool), descr: Doc(md: "Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.")),
+Param(name: "message_effect_id", ty: Option(RawTy("EffectId")), descr: Doc(md: "Unique identifier of the message effect to be added to the message; for private chats only")),
+Param(name: "suggested_post_parameters", ty: Option(RawTy("SuggestedPostParameters")), descr: Doc(md: "A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.")),
+Param(name: "reply_parameters", ty: Option(RawTy("ReplyParameters")), descr: Doc(md: "Description of the message to reply to")),
+Param(name: "reply_markup", ty: Option(RawTy("ReplyMarkup")), descr: Doc(md: "Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.")),],
+        ),
+        Method(
+            names: ("sendRichMessageDraft", "SendRichMessageDraft", "send_rich_message_draft"),
+            return_ty: True,
+            doc: Doc(md: "Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success."),
+            tg_doc: "https://core.telegram.org/bots/api#sendrichmessagedraft",
+            tg_category: "Available methods",
+            params: [Param(name: "chat_id", ty: RawTy("ChatId"), descr: Doc(md: "Unique identifier for the target private chat")),
+Param(name: "message_thread_id", ty: Option(RawTy("ThreadId")), descr: Doc(md: "Unique identifier for the target message thread")),
+Param(name: "draft_id", ty: i64, descr: Doc(md: "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation.")),
+Param(name: "rich_message", ty: RawTy("InputRichMessage"), descr: Doc(md: "The partial message to be streamed. Direct upload of new files and explicit upload of files by a URL isn't supported.")),
+Param(name: "can_stop", ty: Option(bool), descr: Doc(md: "Pass True to show the user a button to stop further drafts. The bot will receive an Update “stopped_message_generation” if the user presses the button.")),
+Param(name: "keep_on_stop", ty: Option(bool), descr: Doc(md: "Pass True to keep the draft in the chat when the button is pressed. The draft will still disappear after a short time or if the bot sends a message. To fully preserve the partial draft, the bot should send it as a new message.")),],
         ),
     ],
     tg_categories: {

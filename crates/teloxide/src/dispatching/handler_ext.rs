@@ -113,7 +113,7 @@ where
     Output: Send + Sync + 'static,
 {
     dptree::filter_map(move |message: Message, me: Me| {
-        let bot_name = me.user.username.expect("Bots must have a username");
+        let bot_name = me.user.username.unwrap_or_default();
         message.text().or_else(|| message.caption()).and_then(|text| C::parse(text, &bot_name).ok())
     })
 }
@@ -137,7 +137,7 @@ where
     Output: Send + Sync + 'static,
 {
     dptree::filter_map(move |message: Message, me: Me| {
-        let bot_name = me.user.username.expect("Bots must have a username");
+        let bot_name = me.user.username?;
 
         let text_or_caption = message.text().or_else(|| message.caption());
         let command = text_or_caption.and_then(|text| C::parse(text, &bot_name).ok());
@@ -178,6 +178,14 @@ mod tests {
         Update {
             id: UpdateId(326_170_274),
             kind: UpdateKind::Message(Message {
+                sender_tag: None,
+                receiver_user: None,
+                ephemeral_message_id: None,
+                guest_query_id: None,
+                reply_to_poll_option_id: None,
+                guest_bot_caller_user: None,
+                guest_bot_caller_chat: None,
+
                 via_bot: None,
                 id: MessageId(5042),
                 thread_id: None,
@@ -241,6 +249,11 @@ mod tests {
 
     fn make_me() -> Me {
         Me {
+            supports_guest_queries: false,
+            has_topics_enabled: false,
+            allows_users_to_create_topics: false,
+            can_manage_bots: false,
+            supports_join_request_queries: false,
             user: User {
                 id: UserId(42),
                 is_bot: true,
@@ -265,7 +278,7 @@ mod tests {
             .branch(Update::filter_message().filter_command::<Cmd>().endpoint(|| async {}));
         let me = make_me();
 
-        let update = make_update("/test@".to_owned() + me.username());
+        let update = make_update("/test@".to_owned() + me.username().unwrap());
         let result = h.dispatch(deps![update, me.clone()]).await;
         assert!(result.is_break());
 
@@ -284,7 +297,7 @@ mod tests {
             .branch(Update::filter_message().filter_mention_command::<Cmd>().endpoint(|| async {}));
         let me = make_me();
 
-        let update = make_update("/test@".to_owned() + me.username());
+        let update = make_update("/test@".to_owned() + me.username().unwrap());
         let result = h.dispatch(deps![update, me.clone()]).await;
         assert!(result.is_break());
 
@@ -295,5 +308,21 @@ mod tests {
         let update = make_update("/test".to_owned());
         let result = h.dispatch(deps![update, me.clone()]).await;
         assert!(result.is_continue());
+    }
+
+    #[tokio::test]
+    async fn commands_without_a_reported_bot_username() {
+        let mut me = make_me();
+        me.user.username = None;
+        let ordinary = dptree::entry()
+            .branch(Update::filter_message().filter_command::<Cmd>().endpoint(|| async {}));
+        assert!(ordinary.dispatch(deps![make_update("/test".into()), me.clone()]).await.is_break());
+        assert!(ordinary
+            .dispatch(deps![make_update("/test@OtherBot".into()), me.clone()])
+            .await
+            .is_continue());
+        let mentioned = dptree::entry()
+            .branch(Update::filter_message().filter_mention_command::<Cmd>().endpoint(|| async {}));
+        assert!(mentioned.dispatch(deps![make_update("/test".into()), me]).await.is_continue());
     }
 }

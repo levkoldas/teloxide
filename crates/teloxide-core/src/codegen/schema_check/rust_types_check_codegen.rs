@@ -199,6 +199,17 @@ fn get_type(prop: &Value, initial_object_name: String) -> (bool, Kind) {
                     },
                 );
             } else {
+                let non_null: Vec<_> = types_array
+                    .iter()
+                    .filter(|kind| !matches!(kind, Kind::Null))
+                    .cloned()
+                    .collect();
+                if non_null.len() > 1 {
+                    return (
+                        !types_array.contains(&Kind::Null),
+                        Kind::AnyOf { any_of: non_null.into_iter().map(KindWrapper).collect() },
+                    );
+                }
                 for variant_type in types_array.clone() {
                     match variant_type {
                         Kind::Null => required = false,
@@ -238,7 +249,20 @@ fn get_type(prop: &Value, initial_object_name: String) -> (bool, Kind) {
     } else if let Some(one_of) = prop.get("oneOf") {
         // If its oneOf, its probably an enum, probably of String
         if let Some(array) = one_of.as_array() {
-            // Just extract the type while checking, if all elements are of the same type
+            let variants: Vec<_> = array
+                .iter()
+                .map(|variant| get_type(variant, initial_object_name.clone()).1)
+                .collect();
+            if variants.len() > 1
+                && variants.iter().all(|variant| matches!(variant, Kind::Reference { .. }))
+            {
+                return (
+                    required,
+                    Kind::AnyOf { any_of: variants.into_iter().map(KindWrapper).collect() },
+                );
+            }
+            // Just extract the type while checking, if all elements are of the
+            // same type
             let mut all_variant_type = None;
             for variant in array {
                 let variant_type = get_type(variant, initial_object_name.clone()).1;
@@ -316,7 +340,7 @@ fn get_type(prop: &Value, initial_object_name: String) -> (bool, Kind) {
         }
         (prop_type, item_kind) => unreachable!(
             "Object `{initial_object_name}`: Any other doesn't make sense. Prop type: \
-             {prop_type:?}; Item kind: {item_kind:?}"
+             {prop_type:?}; Item kind: {item_kind:?}; Schema: {prop:?}"
         ),
     };
 
@@ -345,14 +369,25 @@ fn extract_fields_from_references_array(
     initial_object_name: String,
     most_fields_are_optional: bool,
     all_fields_are_optional: bool, // The difference between them is that if code detects that some
-    // field exists in all references, all_fields_are_optional will still make them optional
+    // field exists in all references, all_fields_are_optional will still make
+    // them optional
     exceptions: &Exceptions,
 ) -> Vec<Property> {
     let mut fields = vec![];
 
     // Gets all of the fields in one big array
     for value in array.clone() {
-        if value.get("type").map(Value::as_str) == Some("object".into()) {
+        // An empty schema is the no-fields branch of a flattened Option.
+        // Keep it in array.len() below so the other branches remain optional.
+        if value.as_object().is_some_and(Map::is_empty) || value == Value::Bool(true) {
+            continue;
+        }
+        // Schemars can nest an externally tagged flattened enum inside an
+        // optional anyOf branch. Recurse into its object composition instead
+        // of interpreting that branch as a scalar property.
+        if value.get("type").and_then(Value::as_str) == Some("object")
+            || ["properties", "oneOf", "anyOf", "allOf"].iter().any(|key| value.get(key).is_some())
+        {
             let x = get_fields_of_rust_object(
                 &value,
                 official_types.clone(),
@@ -387,13 +422,14 @@ fn extract_fields_from_references_array(
 
     let fields_clone = fields.clone();
 
-    // If some field appears as much times are there are references, its in every
-    // single reference, and is required. Otherwise - make it optional.
+    // If some field appears as much times are there are references, its in
+    // every single reference, and is required. Otherwise - make it optional.
     for field in fields.iter_mut() {
         let fields_count = fields_clone
             .iter()
             .filter(|x| {
-                // The fields have to be required in the first place to retain it
+                // The fields have to be required in the first place to retain
+                // it
                 x.name == field.name && x.kind == field.kind && field.required && x.required
             })
             .count();
@@ -453,8 +489,8 @@ fn extract_fields_from_properties_object(
 
         // Here we flatten the types like ChatId and others
         if let Kind::Reference { ref reference } = kind {
-            // If its a reference that isnt in official types, its probably a wrapper for a
-            // type
+            // If its a reference that isnt in official types, its probably a
+            // wrapper for a type
             if !official_types.contains(reference)
                 // Some official types are still in need of being expanded, like InputFile
                 || exceptions.is_expand_reference(reference.to_owned())
@@ -567,6 +603,21 @@ fn get_fields_of_rust_object(
         );
     }
 
+    if let Some(all_of) = rust_object.get("allOf").and_then(Value::as_array) {
+        extend_fields(
+            &mut fields,
+            extract_fields_from_references_array(
+                all_of.to_vec(),
+                official_types.clone(),
+                references,
+                initial_object_name.clone(),
+                false,
+                all_fields_are_optional,
+                exceptions,
+            ),
+        );
+    }
+
     if let Some(ref_string) = rust_object.get("$ref").unwrap_or(&empty_obj).as_str() {
         let reference_object = references
             .get(convert_reference_string(ref_string.to_owned(), initial_object_name.clone()))
@@ -594,8 +645,8 @@ fn check_struct_kind(
     object_name: String,
     errors: &mut Vec<ApiCheckError>,
 ) {
-    // Basic check so that if one field is Bool, but is supposed to be an Integer it
-    // is caught
+    // Basic check so that if one field is Bool, but is supposed to be an
+    // Integer it is caught
     if std::mem::discriminant(rust_kind) != std::mem::discriminant(api_kind) {
         errors.push(ApiCheckError::FieldTyDoesNotMatch {
             object: object_name,
@@ -620,13 +671,39 @@ fn check_struct_kind(
         (rust_kind, api_kind)
     {
         check_struct_kind(&rust_array.0, &api_array.0, field_name, object_name, errors);
+    } else if let (Kind::AnyOf { any_of: rust_variants }, Kind::AnyOf { any_of: api_variants }) =
+        (rust_kind, api_kind)
+    {
+        let contains = |variants: &[KindWrapper], kind: &Kind| {
+            variants.iter().any(|variant| {
+                let mut mismatch = Vec::new();
+                check_struct_kind(
+                    kind,
+                    &variant.0,
+                    field_name.clone(),
+                    object_name.clone(),
+                    &mut mismatch,
+                );
+                mismatch.is_empty()
+            })
+        };
+        if rust_variants.iter().any(|variant| !contains(api_variants, &variant.0))
+            || api_variants.iter().any(|variant| !contains(rust_variants, &variant.0))
+        {
+            errors.push(ApiCheckError::FieldTyDoesNotMatch {
+                object: object_name,
+                field: field_name,
+                raw_type: rust_kind.clone(),
+                actual_type: api_kind.clone(),
+            });
+        }
     } else if let (
         Kind::String { default: _, min_len: _, max_len: _, enumeration: mut rust_enum },
         Kind::String { default: _, min_len: _, max_len: _, enumeration: mut api_enum },
     ) = (rust_kind.clone(), api_kind.clone())
     {
-        // We check only if the existing enums are all good, if any one of these is
-        // empty then there's nothing to check
+        // We check only if the existing enums are all good, if any one of these
+        // is empty then there's nothing to check
         if !api_enum.is_empty() && !rust_enum.is_empty() {
             rust_enum.sort();
             api_enum.sort();
@@ -688,7 +765,8 @@ fn get_fields_of_api_object(api_schema: ApiSchema, api_object: Object) -> Vec<Pr
         ObjectData::AnyOf { any_of } => {
             let mut reference_fields_arrays = vec![];
 
-            // First, we convert an array of references into an array of their fields
+            // First, we convert an array of references into an array of their
+            // fields
             for value in any_of {
                 if let Kind::Reference { reference } = value.0 {
                     let reference_object =
@@ -698,7 +776,9 @@ fn get_fields_of_api_object(api_schema: ApiSchema, api_object: Object) -> Vec<Pr
 
                     reference_fields_arrays.push(reference_fields);
                 } else {
-                    unreachable!("anyOf has not a reference");
+                    // Primitive alternatives (plain strings and arrays in
+                    // RichText) have no object fields.
+                    reference_fields_arrays.push(vec![]);
                 }
             }
 
@@ -707,8 +787,9 @@ fn get_fields_of_api_object(api_schema: ApiSchema, api_object: Object) -> Vec<Pr
             // Second, we check them and add them to `fields`
             for reference_fields_array in reference_fields_arrays.iter_mut() {
                 for reference_field in reference_fields_array.iter_mut() {
-                    // This basically checks if all references have the same field. If yes, it is
-                    // required. If not - set the required to false
+                    // This basically checks if all references have the same
+                    // field. If yes, it is required. If not - set the required
+                    // to false
                     if !(reference_fields_arrays_clone.iter().all(|x| {
                         x.iter().any(|y| {
                             y.name == reference_field.name
@@ -919,6 +1000,14 @@ mod tests {
 
         // Fields that usually have something different with Option<>
         exceptions.extend(vec![
+            Exception::IgnoreFieldRequiredObjectName {
+                object: "PollOption".to_owned(),
+                field_name: "persistent_id".to_owned(),
+            },
+            Exception::IgnoreFieldRequiredObjectName {
+                object: "PollAnswer".to_owned(),
+                field_name: "option_persistent_ids".to_owned(),
+            },
             // file_size has a fallback
             Exception::IgnoreFieldRequiredName { field_name: "file_size".to_owned() },
             // It doesn't exist in InaccessibleMessage because its always 0
@@ -960,6 +1049,26 @@ mod tests {
         // Some fields in objects need to be ignored
         exceptions.extend(vec![
             // `User` has a separation with `Me`
+            Exception::IgnoreObjectField {
+                object: "User".to_owned(),
+                field_name: "supports_guest_queries".to_owned(),
+            },
+            Exception::IgnoreObjectField {
+                object: "User".to_owned(),
+                field_name: "has_topics_enabled".to_owned(),
+            },
+            Exception::IgnoreObjectField {
+                object: "User".to_owned(),
+                field_name: "allows_users_to_create_topics".to_owned(),
+            },
+            Exception::IgnoreObjectField {
+                object: "User".to_owned(),
+                field_name: "can_manage_bots".to_owned(),
+            },
+            Exception::IgnoreObjectField {
+                object: "User".to_owned(),
+                field_name: "supports_join_request_queries".to_owned(),
+            },
             Exception::IgnoreObjectField {
                 object: "User".to_owned(),
                 field_name: "can_join_groups".to_owned(),
@@ -1016,7 +1125,8 @@ mod tests {
 
         // These are exceptions that apply to codegen
         let mut objects_exceptions = Exceptions::new(vec![
-            // Update has custom serialization, and it probably won't be wrong any time soon
+            // Update has custom serialization, and it probably won't be wrong
+            // any time soon
             Exception::RemoveObjectFromChecking { object: "Update".to_owned() },
             // They are in a single struct
             Exception::RemoveObjectFromChecking { object: "MessageOriginUser".to_owned() },
@@ -1066,8 +1176,8 @@ mod tests {
                 object: "TransactionPartnerTelegramAds".to_owned(),
             },
             Exception::RemoveObjectFromChecking { object: "TransactionPartnerOther".to_owned() },
-            // They are checked with PassportElementError, and they don't have a `message` field,
-            // which PassportElementError has
+            // They are checked with PassportElementError, and they don't have a
+            // `message` field, which PassportElementError has
             Exception::RemoveObjectFromChecking {
                 object: "PassportElementErrorDataField".to_owned(),
             },
@@ -1130,7 +1240,10 @@ mod tests {
 
         let api_schema = get_api_schema();
 
-        let mut string_check_objects = String::new();
+        let mut string_check_objects = String::from(
+            "check_object(api_schema.clone(), schema_for!(Me), \"User\".to_owned(), &mut errors, \
+             &exceptions);",
+        );
         for object in api_schema.objects {
             if objects_exceptions.is_object_removed_from_checking(object.name.clone()) {
                 continue;
@@ -1182,4 +1295,29 @@ fn test_rust_objects() {{
         contents = reformat(contents);
         ensure_file_contents(&codegen_path, &contents);
     }
+}
+
+#[test]
+fn union_validation_detects_missing_media_variants() {
+    let animation = KindWrapper(Kind::Reference { reference: "InputMediaAnimation".into() });
+    let audio = KindWrapper(Kind::Reference { reference: "InputMediaAudio".into() });
+    let expected = Kind::AnyOf { any_of: vec![animation.clone(), audio.clone()] };
+    let reordered = Kind::AnyOf { any_of: vec![audio, animation.clone()] };
+    let mut errors = Vec::new();
+    check_struct_kind(
+        &reordered,
+        &expected,
+        "media".into(),
+        "InputRichMessageMedia".into(),
+        &mut errors,
+    );
+    assert!(errors.is_empty());
+    check_struct_kind(
+        &Kind::AnyOf { any_of: vec![animation] },
+        &expected,
+        "media".into(),
+        "InputRichMessageMedia".into(),
+        &mut errors,
+    );
+    assert_eq!(errors.len(), 1);
 }

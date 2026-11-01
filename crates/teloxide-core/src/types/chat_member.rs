@@ -52,6 +52,16 @@ pub struct Owner {
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct Administrator {
+    /// Optional. True, if the administrator can edit the tags of regular
+    /// members; for groups and supergroups only
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub can_manage_tags: bool,
+
+    /// True, if the administrator can manage chat welcome messages or directly
+    /// send them in the case of bots
+    #[serde(default)]
+    pub can_send_welcome_messages: bool,
+
     /// Custom title for this user.
     pub custom_title: Option<String>,
 
@@ -132,6 +142,9 @@ pub struct Administrator {
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct Member {
+    /// Optional. Tag of the member
+    pub tag: Option<String>,
+
     /// Date when the user's subscription will expire
     pub until_date: Option<UntilDate>,
 }
@@ -142,6 +155,17 @@ pub struct Member {
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct Restricted {
+    /// Optional. Tag of the member
+    pub tag: Option<String>,
+
+    /// True, if the user is allowed to react to messages
+    #[serde(default)]
+    pub can_react_to_messages: bool,
+
+    /// True, if the user is allowed to edit their own tag
+    #[serde(default)]
+    pub can_edit_tag: bool,
+
     /// Date when restrictions will be lifted for this user.
     pub until_date: UntilDate,
 
@@ -689,6 +713,45 @@ impl ChatMemberStatus {
     }
 }
 
+impl Administrator {
+    /// Sets `can_manage_tags`.
+    pub fn can_manage_tags(mut self, value: bool) -> Self {
+        self.can_manage_tags = value;
+        self
+    }
+    /// Sets `can_send_welcome_messages`.
+    pub fn can_send_welcome_messages(mut self, value: bool) -> Self {
+        self.can_send_welcome_messages = value;
+        self
+    }
+}
+
+impl Member {
+    /// Sets `tag`.
+    pub fn tag(mut self, value: String) -> Self {
+        self.tag = Some(value);
+        self
+    }
+}
+
+impl Restricted {
+    /// Sets `tag`.
+    pub fn tag(mut self, value: String) -> Self {
+        self.tag = Some(value);
+        self
+    }
+    /// Sets `can_react_to_messages`.
+    pub fn can_react_to_messages(mut self, value: bool) -> Self {
+        self.can_react_to_messages = value;
+        self
+    }
+    /// Sets `can_edit_tag`.
+    pub fn can_edit_tag(mut self, value: bool) -> Self {
+        self.can_edit_tag = value;
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::types::UserId;
@@ -731,6 +794,8 @@ mod tests {
                 added_to_attachment_menu: false,
             },
             kind: ChatMemberKind::Administrator(Administrator {
+                can_manage_tags: false,
+                can_send_welcome_messages: false,
                 custom_title: None,
                 is_anonymous: false,
                 can_be_edited: false,
@@ -797,6 +862,9 @@ mod tests {
                 added_to_attachment_menu: false,
             },
             kind: ChatMemberKind::Restricted(Restricted {
+                tag: None,
+                can_react_to_messages: false,
+                can_edit_tag: false,
                 is_member: true,
                 can_send_messages: true,
                 can_send_audios: false,

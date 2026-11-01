@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Bot API 10.3 methods and types: rich messages and drafts, ephemeral messages,
+  managed bots, guest queries, live photos, poll media, communities, user gifts,
+  profile audios, member tags, styled/disabled keyboards, and subscription updates.
+- Dispatch filters and allowed-update flags for guest messages, managed bots,
+  subscriptions, and stopped message generation.
+- Recursive upload collection for rich blocks, poll options, and inline results,
+  including video covers and profile/story uploads.
+- `EphemeralMessageParameters` and ephemeral-message send parameters from Bot API 10.3.
+
 - Support for TBA 9.2 ([#1403](https://github.com/teloxide/teloxide/pull/1403))
   - Add `checklist_task_id` field to `ReplyParameters` struct
   - Add `reply_to_checklist_task_id` field to `Message` struct
@@ -28,10 +37,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update dependencies and raise the minimum supported Rust version to 1.96.
+
 - Support for TBA 9.2 ([#1403](https://github.com/teloxide/teloxide/pull/1403))
   - `ChatFullInfoPublicKind::Supergroup` is now of type `Box<ChatFullInfoPublicSupergroup>` instead of `ChatFullInfoPublicSupergroup` [**BC**]
 
 ### Fixed 
+
+- Preserve multipart attachment identifiers through inline-result serialization
+  and distinguish cloned uploads whose filenames change.
+- Decode updates from owned JSON values and grow the stack for nested messages.
+- Accept signed, full-width chat IDs in `set_game_score` and expose current inline
+  text, caption, and live-location edit parameters.
+- Apply default parse modes to nested rich-message and poll media while preserving
+  explicit entities.
 
 - Add local TBA file downloading support in `crate::net::download` ([#1173](https://github.com/teloxide/teloxide/pull/1173))
 

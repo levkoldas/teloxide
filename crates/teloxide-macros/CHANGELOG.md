@@ -6,7 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+### Changed
+
+- Update to syn 3 and refresh procedural macro dependencies.
+- Raise the workspace minimum supported Rust version to 1.96.
+
 ### Fixed
+
+- Avoid unreachable-code warnings when command arguments use infallible parsers such as `String::from_str`.
 
 - Don't ignore argument separator in CommandEnum and both separators in Command ([#1462](https://github.com/teloxide/teloxide/pull/1462))
   - Now it's possible to specify `separator` in each command variant

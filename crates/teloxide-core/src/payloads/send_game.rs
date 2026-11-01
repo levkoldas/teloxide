@@ -3,7 +3,7 @@
 use serde::Serialize;
 
 use crate::types::{
-    BusinessConnectionId, ChatId, EffectId, Message, ReplyMarkup, ReplyParameters, ThreadId,
+    BusinessConnectionId, EffectId, Message, Recipient, ReplyMarkup, ReplyParameters, ThreadId,
 };
 
 impl_payload! {
@@ -14,7 +14,7 @@ impl_payload! {
     pub SendGame (SendGameSetters) => Message {
         required {
             /// Unique identifier for the target chat
-            pub chat_id: ChatId [into],
+            pub chat_id: Recipient [into],
             /// Short name of the game, serves as the unique identifier for the game. Set up your games via Botfather.
             pub game_short_name: String [into],
         }

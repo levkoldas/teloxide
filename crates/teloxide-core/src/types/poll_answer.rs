@@ -6,6 +6,11 @@ use crate::types::{Chat, MaybeAnonymousUser, PollId, User};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct PollAnswer {
+    /// Persistent identifiers of the chosen answer options. May be empty if the
+    /// vote was retracted.
+    #[serde(default)]
+    pub option_persistent_ids: Vec<String>,
+
     /// Unique poll identifier.
     pub poll_id: PollId,
 
@@ -40,6 +45,14 @@ struct VoterDe {
 fn deserialize_voter<'d, D: Deserializer<'d>>(d: D) -> Result<MaybeAnonymousUser, D::Error> {
     let VoterDe { voter_chat, user } = VoterDe::deserialize(d)?;
     Ok(voter_chat.map(MaybeAnonymousUser::Chat).or(user.map(MaybeAnonymousUser::User)).unwrap())
+}
+
+impl PollAnswer {
+    /// Sets `option_persistent_ids`.
+    pub fn option_persistent_ids(mut self, value: Vec<String>) -> Self {
+        self.option_persistent_ids = value;
+        self
+    }
 }
 
 #[cfg(test)]

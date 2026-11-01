@@ -16,6 +16,14 @@ pub struct OwnedGiftId(pub String);
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct GiftInfo {
+    /// Optional. True, if the gift's upgrade was purchased after the gift was
+    /// sent
+    pub is_upgrade_separate: Option<crate::types::True>,
+
+    /// Optional. Unique number reserved for this gift when upgraded. See the
+    /// number field in UniqueGift.
+    pub unique_gift_number: Option<u32>,
+
     /// Information about the gift
     pub gift: Gift,
 
@@ -46,6 +54,19 @@ pub struct GiftInfo {
     /// otherwise, everyone will be able to see them
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub is_private: bool,
+}
+
+impl GiftInfo {
+    /// Sets `is_upgrade_separate`.
+    pub fn is_upgrade_separate(mut self, value: crate::types::True) -> Self {
+        self.is_upgrade_separate = Some(value);
+        self
+    }
+    /// Sets `unique_gift_number`.
+    pub fn unique_gift_number(mut self, value: u32) -> Self {
+        self.unique_gift_number = Some(value);
+        self
+    }
 }
 
 #[cfg(test)]

@@ -634,7 +634,7 @@ macro_rules! requester_forward {
     (@method edit_message_checklist $body:ident $ty:ident) => {
         type EditMessageChecklist = $ty![EditMessageChecklist];
 
-        fn edit_message_checklist<C>(&self, business_connection_id: BusinessConnectionId, chat_id: C, message_id: MessageId, checklist: InputChecklist) -> Self::EditMessageChecklist where C: Into<ChatId> {
+        fn edit_message_checklist<C>(&self, business_connection_id: BusinessConnectionId, chat_id: C, message_id: MessageId, checklist: InputChecklist) -> Self::EditMessageChecklist where C: Into<Recipient> {
             let this = self;
             $body!(edit_message_checklist this (business_connection_id: BusinessConnectionId, chat_id: C, message_id: MessageId, checklist: InputChecklist))
         }
@@ -672,7 +672,7 @@ macro_rules! requester_forward {
     (@method send_checklist $body:ident $ty:ident) => {
         type SendChecklist = $ty![SendChecklist];
 
-        fn send_checklist<C>(&self, business_connection_id: BusinessConnectionId, chat_id: C, checklist: InputChecklist) -> Self::SendChecklist where C: Into<ChatId> {
+        fn send_checklist<C>(&self, business_connection_id: BusinessConnectionId, chat_id: C, checklist: InputChecklist) -> Self::SendChecklist where C: Into<Recipient> {
             let this = self;
             $body!(send_checklist this (business_connection_id: BusinessConnectionId, chat_id: C, checklist: InputChecklist))
         }
@@ -1250,19 +1250,17 @@ macro_rules! requester_forward {
     (@method edit_message_text $body:ident $ty:ident) => {
         type EditMessageText = $ty![EditMessageText];
 
-        fn edit_message_text<C, T>(&self, chat_id: C, message_id: MessageId, text: T) -> Self::EditMessageText where C: Into<Recipient>,
-        T: Into<String> {
+        fn edit_message_text<C>(&self, chat_id: C, message_id: MessageId) -> Self::EditMessageText where C: Into<Recipient> {
             let this = self;
-            $body!(edit_message_text this (chat_id: C, message_id: MessageId, text: T))
+            $body!(edit_message_text this (chat_id: C, message_id: MessageId))
         }
     };
     (@method edit_message_text_inline $body:ident $ty:ident) => {
         type EditMessageTextInline = $ty![EditMessageTextInline];
 
-        fn edit_message_text_inline<I, T>(&self, inline_message_id: I, text: T) -> Self::EditMessageTextInline where I: Into<String>,
-        T: Into<String> {
+        fn edit_message_text_inline<I>(&self, inline_message_id: I) -> Self::EditMessageTextInline where I: Into<String> {
             let this = self;
-            $body!(edit_message_text_inline this (inline_message_id: I, text: T))
+            $body!(edit_message_text_inline this (inline_message_id: I))
         }
     };
     (@method edit_message_caption $body:ident $ty:ident) => {
@@ -1771,7 +1769,7 @@ macro_rules! requester_forward {
     (@method send_game $body:ident $ty:ident) => {
         type SendGame = $ty![SendGame];
 
-        fn send_game<C, G>(&self, chat_id: C, game_short_name: G) -> Self::SendGame where C: Into<ChatId>,
+        fn send_game<C, G>(&self, chat_id: C, game_short_name: G) -> Self::SendGame where C: Into<Recipient>,
         G: Into<String> {
             let this = self;
             $body!(send_game this (chat_id: C, game_short_name: G))
@@ -1780,9 +1778,9 @@ macro_rules! requester_forward {
     (@method set_game_score $body:ident $ty:ident) => {
         type SetGameScore = $ty![SetGameScore];
 
-        fn set_game_score(&self, user_id: UserId, score: u64, chat_id: u32, message_id: MessageId) -> Self::SetGameScore {
+        fn set_game_score<C>(&self, user_id: UserId, score: u64, chat_id: C, message_id: MessageId) -> Self::SetGameScore where C: Into<ChatId> {
             let this = self;
-            $body!(set_game_score this (user_id: UserId, score: u64, chat_id: u32, message_id: MessageId))
+            $body!(set_game_score this (user_id: UserId, score: u64, chat_id: C, message_id: MessageId))
         }
     };
     (@method set_game_score_inline $body:ident $ty:ident) => {
@@ -1799,6 +1797,224 @@ macro_rules! requester_forward {
         fn get_game_high_scores<T>(&self, user_id: UserId, target: T) -> Self::GetGameHighScores where T: Into<TargetMessage> {
             let this = self;
             $body!(get_game_high_scores this (user_id: UserId, target: T))
+        }
+    };
+    (@method send_live_photo $body:ident $ty:ident) => {
+        type SendLivePhoto = $ty![SendLivePhoto];
+
+        fn send_live_photo<C>(&self, chat_id: C, live_photo: InputFile, photo: InputFile) -> Self::SendLivePhoto where C: Into<Recipient> {
+            let this = self;
+            $body!(send_live_photo this (chat_id: C, live_photo: InputFile, photo: InputFile))
+        }
+    };
+    (@method send_message_draft $body:ident $ty:ident) => {
+        type SendMessageDraft = $ty![SendMessageDraft];
+
+        fn send_message_draft<C>(&self, chat_id: C, draft_id: i64) -> Self::SendMessageDraft where C: Into<ChatId> {
+            let this = self;
+            $body!(send_message_draft this (chat_id: C, draft_id: i64))
+        }
+    };
+    (@method get_user_profile_audios $body:ident $ty:ident) => {
+        type GetUserProfileAudios = $ty![GetUserProfileAudios];
+
+        fn get_user_profile_audios(&self, user_id: UserId) -> Self::GetUserProfileAudios {
+            let this = self;
+            $body!(get_user_profile_audios this (user_id: UserId))
+        }
+    };
+    (@method set_chat_member_tag $body:ident $ty:ident) => {
+        type SetChatMemberTag = $ty![SetChatMemberTag];
+
+        fn set_chat_member_tag<C>(&self, chat_id: C, user_id: UserId) -> Self::SetChatMemberTag where C: Into<Recipient> {
+            let this = self;
+            $body!(set_chat_member_tag this (chat_id: C, user_id: UserId))
+        }
+    };
+    (@method answer_chat_join_request_query $body:ident $ty:ident) => {
+        type AnswerChatJoinRequestQuery = $ty![AnswerChatJoinRequestQuery];
+
+        fn answer_chat_join_request_query<C, R>(&self, chat_join_request_query_id: C, result: R) -> Self::AnswerChatJoinRequestQuery where C: Into<String>,
+        R: Into<String> {
+            let this = self;
+            $body!(answer_chat_join_request_query this (chat_join_request_query_id: C, result: R))
+        }
+    };
+    (@method send_chat_join_request_web_app $body:ident $ty:ident) => {
+        type SendChatJoinRequestWebApp = $ty![SendChatJoinRequestWebApp];
+
+        fn send_chat_join_request_web_app<C, W>(&self, chat_join_request_query_id: C, web_app_url: W) -> Self::SendChatJoinRequestWebApp where C: Into<String>,
+        W: Into<String> {
+            let this = self;
+            $body!(send_chat_join_request_web_app this (chat_join_request_query_id: C, web_app_url: W))
+        }
+    };
+    (@method get_user_personal_chat_messages $body:ident $ty:ident) => {
+        type GetUserPersonalChatMessages = $ty![GetUserPersonalChatMessages];
+
+        fn get_user_personal_chat_messages(&self, user_id: UserId, limit: u8) -> Self::GetUserPersonalChatMessages {
+            let this = self;
+            $body!(get_user_personal_chat_messages this (user_id: UserId, limit: u8))
+        }
+    };
+    (@method answer_guest_query $body:ident $ty:ident) => {
+        type AnswerGuestQuery = $ty![AnswerGuestQuery];
+
+        fn answer_guest_query<G>(&self, guest_query_id: G, result: InlineQueryResult) -> Self::AnswerGuestQuery where G: Into<String> {
+            let this = self;
+            $body!(answer_guest_query this (guest_query_id: G, result: InlineQueryResult))
+        }
+    };
+    (@method get_managed_bot_token $body:ident $ty:ident) => {
+        type GetManagedBotToken = $ty![GetManagedBotToken];
+
+        fn get_managed_bot_token(&self, user_id: UserId) -> Self::GetManagedBotToken {
+            let this = self;
+            $body!(get_managed_bot_token this (user_id: UserId))
+        }
+    };
+    (@method replace_managed_bot_token $body:ident $ty:ident) => {
+        type ReplaceManagedBotToken = $ty![ReplaceManagedBotToken];
+
+        fn replace_managed_bot_token(&self, user_id: UserId) -> Self::ReplaceManagedBotToken {
+            let this = self;
+            $body!(replace_managed_bot_token this (user_id: UserId))
+        }
+    };
+    (@method get_managed_bot_access_settings $body:ident $ty:ident) => {
+        type GetManagedBotAccessSettings = $ty![GetManagedBotAccessSettings];
+
+        fn get_managed_bot_access_settings(&self, user_id: UserId) -> Self::GetManagedBotAccessSettings {
+            let this = self;
+            $body!(get_managed_bot_access_settings this (user_id: UserId))
+        }
+    };
+    (@method set_managed_bot_access_settings $body:ident $ty:ident) => {
+        type SetManagedBotAccessSettings = $ty![SetManagedBotAccessSettings];
+
+        fn set_managed_bot_access_settings(&self, user_id: UserId, is_access_restricted: bool) -> Self::SetManagedBotAccessSettings {
+            let this = self;
+            $body!(set_managed_bot_access_settings this (user_id: UserId, is_access_restricted: bool))
+        }
+    };
+    (@method set_my_profile_photo $body:ident $ty:ident) => {
+        type SetMyProfilePhoto = $ty![SetMyProfilePhoto];
+
+        fn set_my_profile_photo(&self, photo: InputProfilePhoto) -> Self::SetMyProfilePhoto {
+            let this = self;
+            $body!(set_my_profile_photo this (photo: InputProfilePhoto))
+        }
+    };
+    (@method remove_my_profile_photo $body:ident $ty:ident) => {
+        type RemoveMyProfilePhoto = $ty![RemoveMyProfilePhoto];
+
+        fn remove_my_profile_photo(&self, ) -> Self::RemoveMyProfilePhoto {
+            let this = self;
+            $body!(remove_my_profile_photo this ())
+        }
+    };
+    (@method get_user_gifts $body:ident $ty:ident) => {
+        type GetUserGifts = $ty![GetUserGifts];
+
+        fn get_user_gifts(&self, user_id: UserId) -> Self::GetUserGifts {
+            let this = self;
+            $body!(get_user_gifts this (user_id: UserId))
+        }
+    };
+    (@method get_chat_gifts $body:ident $ty:ident) => {
+        type GetChatGifts = $ty![GetChatGifts];
+
+        fn get_chat_gifts<C>(&self, chat_id: C) -> Self::GetChatGifts where C: Into<Recipient> {
+            let this = self;
+            $body!(get_chat_gifts this (chat_id: C))
+        }
+    };
+    (@method repost_story $body:ident $ty:ident) => {
+        type RepostStory = $ty![RepostStory];
+
+        fn repost_story<F>(&self, business_connection_id: BusinessConnectionId, from_chat_id: F, from_story_id: StoryId, active_period: Seconds) -> Self::RepostStory where F: Into<ChatId> {
+            let this = self;
+            $body!(repost_story this (business_connection_id: BusinessConnectionId, from_chat_id: F, from_story_id: StoryId, active_period: Seconds))
+        }
+    };
+    (@method save_prepared_keyboard_button $body:ident $ty:ident) => {
+        type SavePreparedKeyboardButton = $ty![SavePreparedKeyboardButton];
+
+        fn save_prepared_keyboard_button(&self, user_id: UserId, button: KeyboardButton) -> Self::SavePreparedKeyboardButton {
+            let this = self;
+            $body!(save_prepared_keyboard_button this (user_id: UserId, button: KeyboardButton))
+        }
+    };
+    (@method edit_ephemeral_message_media $body:ident $ty:ident) => {
+        type EditEphemeralMessageMedia = $ty![EditEphemeralMessageMedia];
+
+        fn edit_ephemeral_message_media<C>(&self, chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64, media: InputMedia) -> Self::EditEphemeralMessageMedia where C: Into<Recipient> {
+            let this = self;
+            $body!(edit_ephemeral_message_media this (chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64, media: InputMedia))
+        }
+    };
+    (@method edit_ephemeral_message_caption $body:ident $ty:ident) => {
+        type EditEphemeralMessageCaption = $ty![EditEphemeralMessageCaption];
+
+        fn edit_ephemeral_message_caption<C>(&self, chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64) -> Self::EditEphemeralMessageCaption where C: Into<Recipient> {
+            let this = self;
+            $body!(edit_ephemeral_message_caption this (chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64))
+        }
+    };
+    (@method edit_ephemeral_message_reply_markup $body:ident $ty:ident) => {
+        type EditEphemeralMessageReplyMarkup = $ty![EditEphemeralMessageReplyMarkup];
+
+        fn edit_ephemeral_message_reply_markup<C>(&self, chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64) -> Self::EditEphemeralMessageReplyMarkup where C: Into<Recipient> {
+            let this = self;
+            $body!(edit_ephemeral_message_reply_markup this (chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64))
+        }
+    };
+    (@method delete_ephemeral_message $body:ident $ty:ident) => {
+        type DeleteEphemeralMessage = $ty![DeleteEphemeralMessage];
+
+        fn delete_ephemeral_message<C>(&self, chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64) -> Self::DeleteEphemeralMessage where C: Into<Recipient> {
+            let this = self;
+            $body!(delete_ephemeral_message this (chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64))
+        }
+    };
+    (@method delete_message_reaction $body:ident $ty:ident) => {
+        type DeleteMessageReaction = $ty![DeleteMessageReaction];
+
+        fn delete_message_reaction<C>(&self, chat_id: C, message_id: MessageId) -> Self::DeleteMessageReaction where C: Into<Recipient> {
+            let this = self;
+            $body!(delete_message_reaction this (chat_id: C, message_id: MessageId))
+        }
+    };
+    (@method delete_all_message_reactions $body:ident $ty:ident) => {
+        type DeleteAllMessageReactions = $ty![DeleteAllMessageReactions];
+
+        fn delete_all_message_reactions<C>(&self, chat_id: C) -> Self::DeleteAllMessageReactions where C: Into<Recipient> {
+            let this = self;
+            $body!(delete_all_message_reactions this (chat_id: C))
+        }
+    };
+    (@method edit_ephemeral_message_text $body:ident $ty:ident) => {
+        type EditEphemeralMessageText = $ty![EditEphemeralMessageText];
+
+        fn edit_ephemeral_message_text<C>(&self, chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64) -> Self::EditEphemeralMessageText where C: Into<Recipient> {
+            let this = self;
+            $body!(edit_ephemeral_message_text this (chat_id: C, receiver_user_id: UserId, ephemeral_message_id: i64))
+        }
+    };
+    (@method send_rich_message $body:ident $ty:ident) => {
+        type SendRichMessage = $ty![SendRichMessage];
+
+        fn send_rich_message<C>(&self, chat_id: C, rich_message: InputRichMessage) -> Self::SendRichMessage where C: Into<Recipient> {
+            let this = self;
+            $body!(send_rich_message this (chat_id: C, rich_message: InputRichMessage))
+        }
+    };
+    (@method send_rich_message_draft $body:ident $ty:ident) => {
+        type SendRichMessageDraft = $ty![SendRichMessageDraft];
+
+        fn send_rich_message_draft<C>(&self, chat_id: C, draft_id: i64, rich_message: InputRichMessage) -> Self::SendRichMessageDraft where C: Into<ChatId> {
+            let this = self;
+            $body!(send_rich_message_draft this (chat_id: C, draft_id: i64, rich_message: InputRichMessage))
         }
     };// END BLOCK requester_forward_at_method
 }
@@ -1844,13 +2060,14 @@ fn codegen_requester_forward() {
                 .map(|(l, r)| (l, min_prefix(l, r)))
                 .collect();
 
-            // FIXME: This hard-coded value has been set to avoid conflicting generic
-            // parameter 'B' with impl<B> Requester... in all the adaptors and other places
+            // FIXME: This hard-coded value has been set to avoid conflicting
+            // generic parameter 'B' with impl<B> Requester... in all the
+            // adaptors and other places
             //
-            // One fix could be to take full abbrevation for all the parameters instead of
-            // just the first character. Other fix is to change the generic parameter name
-            // in all the impl blocks to something like 'Z' because that is very less likely
-            // to conflict in future.
+            // One fix could be to take full abbrevation for all the parameters
+            // instead of just the first character. Other fix is to change the
+            // generic parameter name in all the impl blocks to something like
+            // 'Z' because that is very less likely to conflict in future.
             if prefixes.contains_key("business_connection_id") {
                 prefixes["business_connection_id"] = "BCI";
             }
@@ -1880,11 +2097,11 @@ fn codegen_requester_forward() {
                 .flat_map(|p| match convert_for(&p.ty) {
                     Convert::Id(_) => None,
                     Convert::Into(ty) => {
-                        Some(format!("{}: Into<{}>", &to_uppercase(prefixes[&*p.name]), ty))
+                        Some(format!("{}: Into<{}>", to_uppercase(prefixes[&*p.name]), ty))
                     }
                     Convert::Collect(ty) => Some(format!(
                         "{}: IntoIterator<Item = {}>",
-                        &to_uppercase(prefixes[&*p.name]),
+                        to_uppercase(prefixes[&*p.name]),
                         ty
                     )),
                 })

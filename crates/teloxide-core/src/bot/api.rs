@@ -1,3 +1,4 @@
+use crate::types::InputRichMessage;
 use url::Url;
 
 use crate::{
@@ -8,9 +9,9 @@ use crate::{
         AcceptedGiftTypes, BotCommand, BusinessConnectionId, CallbackQueryId, ChatId,
         ChatPermissions, CustomEmojiId, FileId, GiftId, InlineQueryId, InlineQueryResult,
         InputChecklist, InputFile, InputMedia, InputPaidMedia, InputPollOption, InputProfilePhoto,
-        InputSticker, InputStoryContent, LabeledPrice, MessageId, OwnedGiftId, PreCheckoutQueryId,
-        Recipient, Seconds, ShippingQueryId, StickerFormat, StoryId, TelegramTransactionId,
-        ThreadId, UserId,
+        InputSticker, InputStoryContent, KeyboardButton, LabeledPrice, MessageId, OwnedGiftId,
+        PreCheckoutQueryId, Recipient, Seconds, ShippingQueryId, StickerFormat, StoryId,
+        TelegramTransactionId, ThreadId, UserId,
     },
     Bot,
 };
@@ -268,7 +269,7 @@ impl Requester for Bot {
         checklist: InputChecklist,
     ) -> Self::EditMessageChecklist
     where
-        C: Into<ChatId>,
+        C: Into<Recipient>,
     {
         Self::EditMessageChecklist::new(
             self.clone(),
@@ -316,7 +317,7 @@ impl Requester for Bot {
         )
     }
 
-    type SendPoll = JsonRequest<payloads::SendPoll>;
+    type SendPoll = MultipartRequest<payloads::SendPoll>;
 
     fn send_poll<C, Q, O>(&self, chat_id: C, question: Q, options: O) -> Self::SendPoll
     where
@@ -336,7 +337,7 @@ impl Requester for Bot {
         checklist: InputChecklist,
     ) -> Self::SendChecklist
     where
-        C: Into<ChatId>,
+        C: Into<Recipient>,
     {
         Self::SendChecklist::new(
             self.clone(),
@@ -1058,7 +1059,7 @@ impl Requester for Bot {
         Self::DeleteMyCommands::new(self.clone(), payloads::DeleteMyCommands::new())
     }
 
-    type AnswerInlineQuery = JsonRequest<payloads::AnswerInlineQuery>;
+    type AnswerInlineQuery = MultipartRequest<payloads::AnswerInlineQuery>;
 
     fn answer_inline_query<R>(
         &self,
@@ -1074,7 +1075,7 @@ impl Requester for Bot {
         )
     }
 
-    type AnswerWebAppQuery = JsonRequest<payloads::AnswerWebAppQuery>;
+    type AnswerWebAppQuery = MultipartRequest<payloads::AnswerWebAppQuery>;
 
     fn answer_web_app_query<W>(
         &self,
@@ -1090,7 +1091,7 @@ impl Requester for Bot {
         )
     }
 
-    type SavePreparedInlineMessage = JsonRequest<payloads::SavePreparedInlineMessage>;
+    type SavePreparedInlineMessage = MultipartRequest<payloads::SavePreparedInlineMessage>;
 
     fn save_prepared_inline_message(
         &self,
@@ -1103,38 +1104,27 @@ impl Requester for Bot {
         )
     }
 
-    type EditMessageText = JsonRequest<payloads::EditMessageText>;
+    type EditMessageText = MultipartRequest<payloads::EditMessageText>;
 
-    fn edit_message_text<C, T>(
-        &self,
-        chat_id: C,
-        message_id: MessageId,
-        text: T,
-    ) -> Self::EditMessageText
+    fn edit_message_text<C>(&self, chat_id: C, message_id: MessageId) -> Self::EditMessageText
     where
         C: Into<Recipient>,
-        T: Into<String>,
     {
         Self::EditMessageText::new(
             self.clone(),
-            payloads::EditMessageText::new(chat_id, message_id, text),
+            payloads::EditMessageText::new(chat_id, message_id),
         )
     }
 
-    type EditMessageTextInline = JsonRequest<payloads::EditMessageTextInline>;
+    type EditMessageTextInline = MultipartRequest<payloads::EditMessageTextInline>;
 
-    fn edit_message_text_inline<I, T>(
-        &self,
-        inline_message_id: I,
-        text: T,
-    ) -> Self::EditMessageTextInline
+    fn edit_message_text_inline<I>(&self, inline_message_id: I) -> Self::EditMessageTextInline
     where
         I: Into<String>,
-        T: Into<String>,
     {
         Self::EditMessageTextInline::new(
             self.clone(),
-            payloads::EditMessageTextInline::new(inline_message_id, text),
+            payloads::EditMessageTextInline::new(inline_message_id),
         )
     }
 
@@ -1391,7 +1381,7 @@ impl Requester for Bot {
         Self::DeleteStickerFromSet::new(self.clone(), payloads::DeleteStickerFromSet::new(sticker))
     }
 
-    type ReplaceStickerInSet = JsonRequest<payloads::ReplaceStickerInSet>;
+    type ReplaceStickerInSet = MultipartRequest<payloads::ReplaceStickerInSet>;
 
     fn replace_sticker_in_set<N, O>(
         &self,
@@ -1645,7 +1635,8 @@ impl Requester for Bot {
         )
     }
 
-    type SetBusinessAccountProfilePhoto = JsonRequest<payloads::SetBusinessAccountProfilePhoto>;
+    type SetBusinessAccountProfilePhoto =
+        MultipartRequest<payloads::SetBusinessAccountProfilePhoto>;
 
     fn set_business_account_profile_photo(
         &self,
@@ -1769,7 +1760,7 @@ impl Requester for Bot {
         )
     }
 
-    type PostStory = JsonRequest<payloads::PostStory>;
+    type PostStory = MultipartRequest<payloads::PostStory>;
 
     fn post_story(
         &self,
@@ -1783,7 +1774,7 @@ impl Requester for Bot {
         )
     }
 
-    type EditStory = JsonRequest<payloads::EditStory>;
+    type EditStory = MultipartRequest<payloads::EditStory>;
 
     fn edit_story(
         &self,
@@ -1943,7 +1934,7 @@ impl Requester for Bot {
 
     fn send_game<C, G>(&self, chat_id: C, game_short_name: G) -> Self::SendGame
     where
-        C: Into<ChatId>,
+        C: Into<Recipient>,
         G: Into<String>,
     {
         Self::SendGame::new(self.clone(), payloads::SendGame::new(chat_id, game_short_name))
@@ -1951,13 +1942,16 @@ impl Requester for Bot {
 
     type SetGameScore = JsonRequest<payloads::SetGameScore>;
 
-    fn set_game_score(
+    fn set_game_score<C>(
         &self,
         user_id: UserId,
         score: u64,
-        chat_id: u32,
+        chat_id: C,
         message_id: MessageId,
-    ) -> Self::SetGameScore {
+    ) -> Self::SetGameScore
+    where
+        C: Into<ChatId>,
+    {
         Self::SetGameScore::new(
             self.clone(),
             payloads::SetGameScore::new(user_id, score, chat_id, message_id),
@@ -2048,5 +2042,350 @@ impl Requester for Bot {
         C: Into<Recipient>,
     {
         Self::UnpinAllChatMessages::new(self.clone(), payloads::UnpinAllChatMessages::new(chat_id))
+    }
+    type SendLivePhoto = MultipartRequest<payloads::SendLivePhoto>;
+    fn send_live_photo<C>(
+        &self,
+        chat_id: C,
+        live_photo: InputFile,
+        photo: InputFile,
+    ) -> Self::SendLivePhoto
+    where
+        C: Into<Recipient>,
+    {
+        Self::SendLivePhoto::new(
+            self.clone(),
+            payloads::SendLivePhoto::new(chat_id, live_photo, photo),
+        )
+    }
+
+    type SendMessageDraft = JsonRequest<payloads::SendMessageDraft>;
+    fn send_message_draft<C>(&self, chat_id: C, draft_id: i64) -> Self::SendMessageDraft
+    where
+        C: Into<ChatId>,
+    {
+        Self::SendMessageDraft::new(
+            self.clone(),
+            payloads::SendMessageDraft::new(chat_id, draft_id),
+        )
+    }
+
+    type GetUserProfileAudios = JsonRequest<payloads::GetUserProfileAudios>;
+    fn get_user_profile_audios(&self, user_id: UserId) -> Self::GetUserProfileAudios {
+        Self::GetUserProfileAudios::new(self.clone(), payloads::GetUserProfileAudios::new(user_id))
+    }
+
+    type SetChatMemberTag = JsonRequest<payloads::SetChatMemberTag>;
+    fn set_chat_member_tag<C>(&self, chat_id: C, user_id: UserId) -> Self::SetChatMemberTag
+    where
+        C: Into<Recipient>,
+    {
+        Self::SetChatMemberTag::new(self.clone(), payloads::SetChatMemberTag::new(chat_id, user_id))
+    }
+
+    type AnswerChatJoinRequestQuery = JsonRequest<payloads::AnswerChatJoinRequestQuery>;
+    fn answer_chat_join_request_query<C, R>(
+        &self,
+        chat_join_request_query_id: C,
+        result: R,
+    ) -> Self::AnswerChatJoinRequestQuery
+    where
+        C: Into<String>,
+        R: Into<String>,
+    {
+        Self::AnswerChatJoinRequestQuery::new(
+            self.clone(),
+            payloads::AnswerChatJoinRequestQuery::new(chat_join_request_query_id, result),
+        )
+    }
+
+    type SendChatJoinRequestWebApp = JsonRequest<payloads::SendChatJoinRequestWebApp>;
+    fn send_chat_join_request_web_app<C, W>(
+        &self,
+        chat_join_request_query_id: C,
+        web_app_url: W,
+    ) -> Self::SendChatJoinRequestWebApp
+    where
+        C: Into<String>,
+        W: Into<String>,
+    {
+        Self::SendChatJoinRequestWebApp::new(
+            self.clone(),
+            payloads::SendChatJoinRequestWebApp::new(chat_join_request_query_id, web_app_url),
+        )
+    }
+
+    type GetUserPersonalChatMessages = JsonRequest<payloads::GetUserPersonalChatMessages>;
+    fn get_user_personal_chat_messages(
+        &self,
+        user_id: UserId,
+        limit: u8,
+    ) -> Self::GetUserPersonalChatMessages {
+        Self::GetUserPersonalChatMessages::new(
+            self.clone(),
+            payloads::GetUserPersonalChatMessages::new(user_id, limit),
+        )
+    }
+
+    type AnswerGuestQuery = MultipartRequest<payloads::AnswerGuestQuery>;
+    fn answer_guest_query<G>(
+        &self,
+        guest_query_id: G,
+        result: InlineQueryResult,
+    ) -> Self::AnswerGuestQuery
+    where
+        G: Into<String>,
+    {
+        Self::AnswerGuestQuery::new(
+            self.clone(),
+            payloads::AnswerGuestQuery::new(guest_query_id, result),
+        )
+    }
+
+    type GetManagedBotToken = JsonRequest<payloads::GetManagedBotToken>;
+    fn get_managed_bot_token(&self, user_id: UserId) -> Self::GetManagedBotToken {
+        Self::GetManagedBotToken::new(self.clone(), payloads::GetManagedBotToken::new(user_id))
+    }
+
+    type ReplaceManagedBotToken = JsonRequest<payloads::ReplaceManagedBotToken>;
+    fn replace_managed_bot_token(&self, user_id: UserId) -> Self::ReplaceManagedBotToken {
+        Self::ReplaceManagedBotToken::new(
+            self.clone(),
+            payloads::ReplaceManagedBotToken::new(user_id),
+        )
+    }
+
+    type GetManagedBotAccessSettings = JsonRequest<payloads::GetManagedBotAccessSettings>;
+    fn get_managed_bot_access_settings(
+        &self,
+        user_id: UserId,
+    ) -> Self::GetManagedBotAccessSettings {
+        Self::GetManagedBotAccessSettings::new(
+            self.clone(),
+            payloads::GetManagedBotAccessSettings::new(user_id),
+        )
+    }
+
+    type SetManagedBotAccessSettings = JsonRequest<payloads::SetManagedBotAccessSettings>;
+    fn set_managed_bot_access_settings(
+        &self,
+        user_id: UserId,
+        is_access_restricted: bool,
+    ) -> Self::SetManagedBotAccessSettings {
+        Self::SetManagedBotAccessSettings::new(
+            self.clone(),
+            payloads::SetManagedBotAccessSettings::new(user_id, is_access_restricted),
+        )
+    }
+
+    type SetMyProfilePhoto = MultipartRequest<payloads::SetMyProfilePhoto>;
+    fn set_my_profile_photo(&self, photo: InputProfilePhoto) -> Self::SetMyProfilePhoto {
+        Self::SetMyProfilePhoto::new(self.clone(), payloads::SetMyProfilePhoto::new(photo))
+    }
+
+    type RemoveMyProfilePhoto = JsonRequest<payloads::RemoveMyProfilePhoto>;
+    fn remove_my_profile_photo(&self) -> Self::RemoveMyProfilePhoto {
+        Self::RemoveMyProfilePhoto::new(self.clone(), payloads::RemoveMyProfilePhoto::new())
+    }
+
+    type GetUserGifts = JsonRequest<payloads::GetUserGifts>;
+    fn get_user_gifts(&self, user_id: UserId) -> Self::GetUserGifts {
+        Self::GetUserGifts::new(self.clone(), payloads::GetUserGifts::new(user_id))
+    }
+
+    type GetChatGifts = JsonRequest<payloads::GetChatGifts>;
+    fn get_chat_gifts<C>(&self, chat_id: C) -> Self::GetChatGifts
+    where
+        C: Into<Recipient>,
+    {
+        Self::GetChatGifts::new(self.clone(), payloads::GetChatGifts::new(chat_id))
+    }
+
+    type RepostStory = JsonRequest<payloads::RepostStory>;
+    fn repost_story<F>(
+        &self,
+        business_connection_id: BusinessConnectionId,
+        from_chat_id: F,
+        from_story_id: StoryId,
+        active_period: Seconds,
+    ) -> Self::RepostStory
+    where
+        F: Into<ChatId>,
+    {
+        Self::RepostStory::new(
+            self.clone(),
+            payloads::RepostStory::new(
+                business_connection_id,
+                from_chat_id,
+                from_story_id,
+                active_period,
+            ),
+        )
+    }
+
+    type SavePreparedKeyboardButton = JsonRequest<payloads::SavePreparedKeyboardButton>;
+    fn save_prepared_keyboard_button(
+        &self,
+        user_id: UserId,
+        button: KeyboardButton,
+    ) -> Self::SavePreparedKeyboardButton {
+        Self::SavePreparedKeyboardButton::new(
+            self.clone(),
+            payloads::SavePreparedKeyboardButton::new(user_id, button),
+        )
+    }
+
+    type EditEphemeralMessageMedia = MultipartRequest<payloads::EditEphemeralMessageMedia>;
+    fn edit_ephemeral_message_media<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+        media: InputMedia,
+    ) -> Self::EditEphemeralMessageMedia
+    where
+        C: Into<Recipient>,
+    {
+        Self::EditEphemeralMessageMedia::new(
+            self.clone(),
+            payloads::EditEphemeralMessageMedia::new(
+                chat_id,
+                receiver_user_id,
+                ephemeral_message_id,
+                media,
+            ),
+        )
+    }
+
+    type EditEphemeralMessageCaption = JsonRequest<payloads::EditEphemeralMessageCaption>;
+    fn edit_ephemeral_message_caption<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::EditEphemeralMessageCaption
+    where
+        C: Into<Recipient>,
+    {
+        Self::EditEphemeralMessageCaption::new(
+            self.clone(),
+            payloads::EditEphemeralMessageCaption::new(
+                chat_id,
+                receiver_user_id,
+                ephemeral_message_id,
+            ),
+        )
+    }
+
+    type EditEphemeralMessageReplyMarkup = JsonRequest<payloads::EditEphemeralMessageReplyMarkup>;
+    fn edit_ephemeral_message_reply_markup<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::EditEphemeralMessageReplyMarkup
+    where
+        C: Into<Recipient>,
+    {
+        Self::EditEphemeralMessageReplyMarkup::new(
+            self.clone(),
+            payloads::EditEphemeralMessageReplyMarkup::new(
+                chat_id,
+                receiver_user_id,
+                ephemeral_message_id,
+            ),
+        )
+    }
+
+    type DeleteEphemeralMessage = JsonRequest<payloads::DeleteEphemeralMessage>;
+    fn delete_ephemeral_message<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::DeleteEphemeralMessage
+    where
+        C: Into<Recipient>,
+    {
+        Self::DeleteEphemeralMessage::new(
+            self.clone(),
+            payloads::DeleteEphemeralMessage::new(chat_id, receiver_user_id, ephemeral_message_id),
+        )
+    }
+
+    type DeleteMessageReaction = JsonRequest<payloads::DeleteMessageReaction>;
+    fn delete_message_reaction<C>(
+        &self,
+        chat_id: C,
+        message_id: MessageId,
+    ) -> Self::DeleteMessageReaction
+    where
+        C: Into<Recipient>,
+    {
+        Self::DeleteMessageReaction::new(
+            self.clone(),
+            payloads::DeleteMessageReaction::new(chat_id, message_id),
+        )
+    }
+
+    type DeleteAllMessageReactions = JsonRequest<payloads::DeleteAllMessageReactions>;
+    fn delete_all_message_reactions<C>(&self, chat_id: C) -> Self::DeleteAllMessageReactions
+    where
+        C: Into<Recipient>,
+    {
+        Self::DeleteAllMessageReactions::new(
+            self.clone(),
+            payloads::DeleteAllMessageReactions::new(chat_id),
+        )
+    }
+    type EditEphemeralMessageText = MultipartRequest<payloads::EditEphemeralMessageText>;
+    fn edit_ephemeral_message_text<C>(
+        &self,
+        chat_id: C,
+        receiver_user_id: UserId,
+        ephemeral_message_id: i64,
+    ) -> Self::EditEphemeralMessageText
+    where
+        C: Into<Recipient>,
+    {
+        Self::EditEphemeralMessageText::new(
+            self.clone(),
+            payloads::EditEphemeralMessageText::new(
+                chat_id,
+                receiver_user_id,
+                ephemeral_message_id,
+            ),
+        )
+    }
+
+    type SendRichMessage = MultipartRequest<payloads::SendRichMessage>;
+    fn send_rich_message<C>(
+        &self,
+        chat_id: C,
+        rich_message: InputRichMessage,
+    ) -> Self::SendRichMessage
+    where
+        C: Into<Recipient>,
+    {
+        Self::SendRichMessage::new(
+            self.clone(),
+            payloads::SendRichMessage::new(chat_id, rich_message),
+        )
+    }
+
+    type SendRichMessageDraft = MultipartRequest<payloads::SendRichMessageDraft>;
+    fn send_rich_message_draft<C>(
+        &self,
+        chat_id: C,
+        draft_id: i64,
+        rich_message: InputRichMessage,
+    ) -> Self::SendRichMessageDraft
+    where
+        C: Into<ChatId>,
+    {
+        Self::SendRichMessageDraft::new(
+            self.clone(),
+            payloads::SendRichMessageDraft::new(chat_id, draft_id, rich_message),
+        )
     }
 }

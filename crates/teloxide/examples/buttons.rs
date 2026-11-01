@@ -66,7 +66,7 @@ async fn message_handler(
     me: Me,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(text) = msg.text() {
-        match BotCommands::parse(text, me.username()) {
+        match BotCommands::parse(text, me.username().unwrap_or_default()) {
             Ok(Command::Help) => {
                 // Just send the description of all commands.
                 bot.send_message(msg.chat.id, Command::descriptions().to_string()).await?;
@@ -120,7 +120,7 @@ async fn callback_handler(bot: Bot, q: CallbackQuery) -> Result<(), Box<dyn Erro
         if let Some(message) = q.regular_message() {
             bot.edit_text(message, text).await?;
         } else if let Some(id) = q.inline_message_id {
-            bot.edit_message_text_inline(id, text).await?;
+            bot.edit_message_text_inline(id).text(text).await?;
         }
 
         log::info!("You chose: {version}");

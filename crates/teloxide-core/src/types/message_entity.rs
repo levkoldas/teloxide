@@ -199,7 +199,8 @@ impl<'a> MessageEntityRef<'a> {
     /// Parses telegram [`MessageEntity`]s converting offsets to UTF-8.
     #[must_use]
     pub fn parse(text: &'a str, entities: &'a [MessageEntity]) -> Vec<Self> {
-        // This creates entities with **wrong** offsets (UTF-16) that we later patch.
+        // This creates entities with **wrong** offsets (UTF-16) that we later
+        // patch.
         let mut entities: Vec<_> = entities
             .iter()
             .map(|e| Self { message: text, range: e.offset..e.offset + e.length, kind: &e.kind })
@@ -213,8 +214,8 @@ impl<'a> MessageEntityRef<'a> {
             .flat_map(|Self { range: Range { start, end }, .. }| [start, end])
             .collect();
 
-        // Sort in decreasing order, so the smallest elements are at the end and can be
-        // removed more easily
+        // Sort in decreasing order, so the smallest elements are at the end and
+        // can be removed more easily
         offsets.sort_unstable_by_key(|&&mut offset| cmp::Reverse(offset));
 
         let _ = text
@@ -249,6 +250,12 @@ impl<'a> MessageEntityRef<'a> {
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum MessageEntityKind {
+    /// A Unix timestamp rendered using Telegram's date-time formatting syntax.
+    DateTime {
+        unix_time: i64,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        date_time_format: Option<String>,
+    },
     Mention,
     Hashtag,
     Cashtag,
@@ -264,10 +271,30 @@ pub enum MessageEntityKind {
     Strikethrough,
     Spoiler,
     Code,
-    Pre { language: Option<String> },
-    TextLink { url: reqwest::Url },
-    TextMention { user: User },
-    CustomEmoji { custom_emoji_id: CustomEmojiId },
+    Pre {
+        language: Option<String>,
+    },
+    TextLink {
+        url: reqwest::Url,
+    },
+    TextMention {
+        user: User,
+    },
+    CustomEmoji {
+        custom_emoji_id: CustomEmojiId,
+    },
+}
+
+impl MessageEntity {
+    /// Creates an entity that displays a Unix timestamp in the user's timezone.
+    pub fn date_time(
+        unix_time: i64,
+        date_time_format: Option<String>,
+        offset: usize,
+        length: usize,
+    ) -> Self {
+        Self::new(MessageEntityKind::DateTime { unix_time, date_time_format }, offset, length)
+    }
 }
 
 #[cfg(test)]
@@ -410,8 +437,8 @@ mod tests {
 
     #[test]
     fn parse_empty() {
-        // It should be impossible for this to be returned from telegram, but just to be
-        // sure
+        // It should be impossible for this to be returned from telegram, but
+        // just to be sure
         let parsed = MessageEntityRef::parse(
             "",
             &[

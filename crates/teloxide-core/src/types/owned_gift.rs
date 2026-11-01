@@ -39,6 +39,14 @@ pub struct OwnedGifts {
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct OwnedGiftRegular {
+    /// Optional. True, if the gift's upgrade was purchased after the gift was
+    /// sent; for gifts received on behalf of business accounts only
+    pub is_upgrade_separate: Option<crate::types::True>,
+
+    /// Optional. Unique number reserved for this gift when upgraded. See the
+    /// number field in UniqueGift.
+    pub unique_gift_number: Option<u32>,
+
     /// Information about the regular gift
     pub gift: Gift,
 
@@ -129,4 +137,17 @@ pub struct OwnedGiftUnique {
     #[serde(default, with = "crate::types::serde_opt_date_from_unix_timestamp")]
     #[cfg_attr(test, schemars(with = "Option<i64>"))]
     pub next_transfer_date: Option<DateTime<Utc>>,
+}
+
+impl OwnedGiftRegular {
+    /// Sets `is_upgrade_separate`.
+    pub fn is_upgrade_separate(mut self, value: crate::types::True) -> Self {
+        self.is_upgrade_separate = Some(value);
+        self
+    }
+    /// Sets `unique_gift_number`.
+    pub fn unique_gift_number(mut self, value: u32) -> Self {
+        self.unique_gift_number = Some(value);
+        self
+    }
 }

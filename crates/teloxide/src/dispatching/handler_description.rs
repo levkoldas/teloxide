@@ -51,14 +51,18 @@ impl EventKind for Kind {
     fn full_set() -> HashSet<Self> {
         use AllowedUpdate::*;
 
-        // NB: We need to specify all update kinds by hand, because telegram doesn't
-        //     enable `ChatMember` by default:
+        // NB: We need to specify all update kinds by hand, because telegram
+        // doesn't     enable `ChatMember` by default:
         //
         //     > A JSON-serialized list of the update types you want your bot to
-        //     > receive. For example, specify [“message”, “edited_channel_post”,
-        //     > “callback_query”] to only receive updates of these types. See Update
-        //     > for a complete list of available update types. Specify an empty list
-        //     > to receive all update types except chat_member (default). If not
+        //     > receive. For example, specify [“message”,
+        //     > “edited_channel_post”,
+        //     > “callback_query”] to only receive updates of these types. See
+        //     > Update
+        //     > for a complete list of available update types. Specify an empty
+        //     > list
+        //     > to receive all update types except chat_member (default). If
+        //     > not
         //     > specified, the previous setting will be used.
 
         [
@@ -85,6 +89,10 @@ impl EventKind for Kind {
             ChatJoinRequest,
             ChatBoost,
             RemovedChatBoost,
+            GuestMessage,
+            ManagedBot,
+            Subscription,
+            StoppedMessageGeneration,
         ]
         .into_iter()
         .map(Kind)
@@ -166,11 +174,16 @@ mod tests {
             ChatJoinRequest,
             ChatBoost,
             RemovedChatBoost,
+            GuestMessage,
+            ManagedBot,
+            Subscription,
+            StoppedMessageGeneration,
         ];
 
         for update in allowed_updates_reference {
             match update {
-                // CAUTION: Don't forget to add new `UpdateKind` to `allowed_updates_reference`!
+                // CAUTION: Don't forget to add new `UpdateKind` to
+                // `allowed_updates_reference`!
                 Message
                 | EditedMessage
                 | ChannelPost
@@ -193,6 +206,10 @@ mod tests {
                 | BusinessMessage
                 | BusinessConnection
                 | EditedBusinessMessage
+                | GuestMessage
+                | ManagedBot
+                | Subscription
+                | StoppedMessageGeneration
                 | DeletedBusinessMessages => {
                     assert!(full_set.contains(&Kind(update)))
                 }

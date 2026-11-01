@@ -2,23 +2,27 @@
 
 use serde::Serialize;
 
-use crate::types::{BusinessConnectionId, InlineKeyboardMarkup, MessageEntity, ParseMode, True};
+use crate::types::{
+    BusinessConnectionId, InlineKeyboardMarkup, InputRichMessage, LinkPreviewOptions,
+    MessageEntity, ParseMode, True,
+};
 
 impl_payload! {
+    @[multipart = rich_message]
     /// Use this method to edit text and [games] messages. On success, _True_ is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within **48 hours** from the time they were sent.
     ///
     /// See also: [`EditMessageText`](crate::payloads::EditMessageText)
     ///
     /// [games]: https://core.telegram.org/bots/api#games
-    #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize)]
+    #[derive(Debug, Clone, Serialize)]
     pub EditMessageTextInline (EditMessageTextInlineSetters) => True {
         required {
             /// Identifier of the inline message
             pub inline_message_id: String [into],
-            /// New text of the message, 1-4096 characters after entities parsing
-            pub text: String [into],
         }
         optional {
+            /// New text of the message, 1-4096 characters after entities parsing
+            pub text: String [into],
             /// Unique identifier of the business connection on behalf of which the message to be edited was sent
             pub business_connection_id: BusinessConnectionId,
             /// Mode for parsing entities in the message text. See [formatting options] for more details.
@@ -27,12 +31,14 @@ impl_payload! {
             pub parse_mode: ParseMode,
             /// List of special entities that appear in message text, which can be specified instead of _parse\_mode_
             pub entities: Vec<MessageEntity> [collect],
-            /// Disables link previews for links in this message
-            pub disable_web_page_preview: bool,
+            /// Link preview generation options for the message
+            pub link_preview_options: LinkPreviewOptions,
             /// A JSON-serialized object for an [inline keyboard].
             ///
             /// [inline keyboard]: https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating
             pub reply_markup: InlineKeyboardMarkup,
+            /// New rich content of the message; required if text isn't specified. Direct upload of new files and explicit upload of files by a URL isn't supported when an inline message is edited.
+            pub rich_message: InputRichMessage,
         }
     }
 }

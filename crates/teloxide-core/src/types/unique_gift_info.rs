@@ -7,6 +7,25 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct UniqueGiftInfo {
+    /// Optional. Text of the message that was added to the gift
+    pub text: Option<String>,
+
+    /// Optional. Special entities that appear in the text
+    pub entities: Option<Vec<crate::types::MessageEntity>>,
+
+    /// Optional. True, if the sender and gift text are shown only to the gift
+    /// receiver; otherwise, everyone will be able to see them
+    pub is_private: Option<crate::types::True>,
+
+    /// Optional. For gifts bought from other users, the currency in which the
+    /// payment for the gift was done. Currently, one of “XTR” for Telegram
+    /// Stars or “TON” for TON grams.
+    pub last_resale_currency: Option<String>,
+
+    /// Optional. For gifts bought from other users, the price paid for the gift
+    /// in either Telegram Stars or nanograms
+    pub last_resale_amount: Option<i64>,
+
     /// Information about the gift
     pub gift: UniqueGift,
 
@@ -14,9 +33,6 @@ pub struct UniqueGiftInfo {
     /// regular gifts, `Transfer` for gifts transferred from other users or
     /// channels, or `Resale` for gifts bought from other users
     pub origin: UniqueGiftOrigin,
-
-    /// For gifts bought from other users, the price paid for the gift
-    pub last_resale_star_count: Option<u32>,
 
     /// Unique identifier of the received gift for the bot; only present for
     /// gifts received on behalf of business accounts
@@ -41,8 +57,38 @@ pub struct UniqueGiftInfo {
 #[serde(rename_all = "snake_case")]
 pub enum UniqueGiftOrigin {
     Upgrade,
+    GiftedUpgrade,
+    Offer,
     Transfer,
     Resale,
+}
+
+impl UniqueGiftInfo {
+    /// Sets `text`.
+    pub fn text(mut self, value: String) -> Self {
+        self.text = Some(value);
+        self
+    }
+    /// Sets `entities`.
+    pub fn entities(mut self, value: Vec<crate::types::MessageEntity>) -> Self {
+        self.entities = Some(value);
+        self
+    }
+    /// Sets `is_private`.
+    pub fn is_private(mut self, value: crate::types::True) -> Self {
+        self.is_private = Some(value);
+        self
+    }
+    /// Sets `last_resale_currency`.
+    pub fn last_resale_currency(mut self, value: String) -> Self {
+        self.last_resale_currency = Some(value);
+        self
+    }
+    /// Sets `last_resale_amount`.
+    pub fn last_resale_amount(mut self, value: i64) -> Self {
+        self.last_resale_amount = Some(value);
+        self
+    }
 }
 
 #[cfg(test)]
@@ -53,7 +99,8 @@ mod tests {
     fn deserialize() {
         let data = r#"{
             "gift": {
-                "base_name": "name",
+                "gift_id": "gift",
+            "base_name": "name",
                 "name": "name",
                 "number": 123,
                 "model": {

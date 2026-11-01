@@ -1,3 +1,4 @@
+use crate::types::KeyboardButtonRequestManagedBot;
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::types::{
@@ -14,6 +15,18 @@ use crate::types::{
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct KeyboardButton {
+    /// Optional. Unique identifier of the custom emoji shown before the text of
+    /// the button. Can only be used by bots that purchased additional
+    /// usernames on Fragment or in the messages directly sent by the bot to
+    /// private, group and supergroup chats if the owner of the bot has a
+    /// Telegram Premium subscription.
+    pub icon_custom_emoji_id: Option<crate::types::CustomEmojiId>,
+
+    /// Optional. Style of the button. Must be one of “danger” (red), “success”
+    /// (green) or “primary” (blue). If omitted, then an app-specific style
+    /// is used.
+    pub style: Option<crate::types::ButtonStyle>,
+
     /// Text of the button. If none of the optional fields are used, it will
     /// be sent as a message when the button is pressed.
     pub text: String,
@@ -31,7 +44,7 @@ impl KeyboardButton {
     where
         T: Into<String>,
     {
-        Self { text: text.into(), request: None }
+        Self { icon_custom_emoji_id: None, style: None, text: text.into(), request: None }
     }
 
     pub fn request<T>(mut self, val: T) -> Self
@@ -49,6 +62,9 @@ impl KeyboardButton {
 #[derive(Clone, Debug, Eq, Hash, PartialEq /*, Serialize, Deserialize */)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub enum ButtonRequest {
+    /// Creates or selects a managed bot.
+    #[cfg_attr(test, schemars(rename = "request_managed_bot"))]
+    ManagedBot(KeyboardButtonRequestManagedBot),
     /// If this variant is used, the user's current location will be sent when
     /// the button is pressed.
     ///
@@ -102,6 +118,7 @@ pub enum ButtonRequest {
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 struct RawRequest {
+    request_managed_bot: Option<KeyboardButtonRequestManagedBot>,
     /// If `true`, the user's phone number will be sent as a contact
     /// when the button is pressed. Available in private chats only.
     #[serde(rename = "request_contact")]
@@ -143,19 +160,22 @@ impl<'de> Deserialize<'de> for ButtonRequest {
     {
         let raw = RawRequest::deserialize(deserializer)?;
         match raw {
-            RawRequest { contact, location, chat, users, poll, web_app }
+            RawRequest { contact, location, chat, users, poll, web_app, request_managed_bot }
                 if 1 < (contact.is_some() as u8
                     + location.is_some() as u8
                     + chat.is_some() as u8
                     + users.is_some() as u8
                     + poll.is_some() as u8
-                    + web_app.is_some() as u8) =>
+                    + web_app.is_some() as u8
+                    + request_managed_bot.is_some() as u8) =>
             {
                 Err(D::Error::custom(
                     "`request_contact`, `request_location`, `request_chat`, `request_user`, \
-                     `request_poll` and `web_app` fields are mutually exclusive",
+                     `request_poll`, `request_managed_bot` and `web_app` fields are mutually \
+                     exclusive",
                 ))
             }
+            RawRequest { request_managed_bot: Some(bot), .. } => Ok(Self::ManagedBot(bot)),
             RawRequest { contact: Some(True), .. } => Ok(Self::Contact),
             RawRequest { location: Some(True), .. } => Ok(Self::Location),
             RawRequest { chat: Some(request_chat), .. } => Ok(Self::RequestChat(request_chat)),
@@ -164,6 +184,7 @@ impl<'de> Deserialize<'de> for ButtonRequest {
             RawRequest { web_app: Some(web_app), .. } => Ok(Self::WebApp(web_app)),
 
             RawRequest {
+                request_managed_bot: None,
                 contact: None,
                 location: None,
                 chat: None,
@@ -172,7 +193,8 @@ impl<'de> Deserialize<'de> for ButtonRequest {
                 web_app: None,
             } => Err(D::Error::custom(
                 "Either one of `request_contact`, `request_chat`, `request_users`, \
-                 `request_location`, `request_poll` and `web_app` fields is required",
+                 `request_location`, `request_poll`, `request_managed_bot` and `web_app` fields \
+                 is required",
             )),
         }
     }
@@ -184,6 +206,7 @@ impl Serialize for ButtonRequest {
         S: Serializer,
     {
         let mut raw = RawRequest {
+            request_managed_bot: None,
             contact: None,
             location: None,
             chat: None,
@@ -193,6 +216,7 @@ impl Serialize for ButtonRequest {
         };
 
         match self {
+            Self::ManagedBot(bot) => raw.request_managed_bot = Some(bot.clone()),
             Self::Contact => raw.contact = Some(True),
             Self::Location => raw.location = Some(True),
             Self::RequestChat(request_chat) => raw.chat = Some(request_chat.clone()),
@@ -205,6 +229,19 @@ impl Serialize for ButtonRequest {
     }
 }
 
+impl KeyboardButton {
+    /// Sets `icon_custom_emoji_id`.
+    pub fn icon_custom_emoji_id(mut self, value: crate::types::CustomEmojiId) -> Self {
+        self.icon_custom_emoji_id = Some(value);
+        self
+    }
+    /// Sets `style`.
+    pub fn style(mut self, value: crate::types::ButtonStyle) -> Self {
+        self.style = Some(value);
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::types::RequestId;
@@ -213,7 +250,12 @@ mod tests {
 
     #[test]
     fn serialize_no_request() {
-        let button = KeyboardButton { text: String::from(""), request: None };
+        let button = KeyboardButton {
+            icon_custom_emoji_id: None,
+            style: None,
+            text: String::from(""),
+            request: None,
+        };
         let expected = r#"{"text":""}"#;
         let actual = serde_json::to_string(&button).unwrap();
         assert_eq!(expected, actual);
@@ -221,8 +263,12 @@ mod tests {
 
     #[test]
     fn serialize_request_contact() {
-        let button =
-            KeyboardButton { text: String::from(""), request: Some(ButtonRequest::Contact) };
+        let button = KeyboardButton {
+            icon_custom_emoji_id: None,
+            style: None,
+            text: String::from(""),
+            request: Some(ButtonRequest::Contact),
+        };
         let expected = r#"{"text":"","request_contact":true}"#;
         let actual = serde_json::to_string(&button).unwrap();
         assert_eq!(expected, actual);
@@ -231,6 +277,8 @@ mod tests {
     #[test]
     fn serialize_chat_request() {
         let button = KeyboardButton {
+            icon_custom_emoji_id: None,
+            style: None,
             text: String::from(""),
             request: Some(ButtonRequest::RequestChat(KeyboardButtonRequestChat::new(
                 RequestId(0),
@@ -245,7 +293,12 @@ mod tests {
     #[test]
     fn deserialize_no_request() {
         let json = r#"{"text":""}"#;
-        let expected = KeyboardButton { text: String::from(""), request: None };
+        let expected = KeyboardButton {
+            icon_custom_emoji_id: None,
+            style: None,
+            text: String::from(""),
+            request: None,
+        };
         let actual = serde_json::from_str(json).unwrap();
         assert_eq!(expected, actual);
     }
@@ -253,8 +306,12 @@ mod tests {
     #[test]
     fn deserialize_request_contact() {
         let json = r#"{"text":"","request_contact":true}"#;
-        let expected =
-            KeyboardButton { text: String::from(""), request: Some(ButtonRequest::Contact) };
+        let expected = KeyboardButton {
+            icon_custom_emoji_id: None,
+            style: None,
+            text: String::from(""),
+            request: Some(ButtonRequest::Contact),
+        };
         let actual = serde_json::from_str(json).unwrap();
         assert_eq!(expected, actual);
     }

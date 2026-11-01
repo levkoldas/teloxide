@@ -52,6 +52,7 @@ pub use direct_messages_topic::*;
 pub use document::*;
 pub use encrypted_credentials::*;
 pub use encrypted_passport_element::*;
+pub use ephemeral_message_parameters::*;
 pub use external_reply_info::*;
 pub use file::*;
 pub use force_reply::*;
@@ -250,6 +251,7 @@ mod dice_emoji;
 mod direct_message_price_changed;
 mod direct_messages_topic;
 mod document;
+mod ephemeral_message_parameters;
 mod external_reply_info;
 mod file;
 mod force_reply;
@@ -551,6 +553,7 @@ pub(crate) mod option_url_from_string {
 // Issue https://github.com/teloxide/teloxide/issues/1135
 // Workaround to avoid flattening with serde-multipart requests (involving
 // file-manipulations)
+#[cfg(test)]
 pub(crate) mod msg_id_as_int {
     use crate::types::MessageId;
 
@@ -692,3 +695,92 @@ pub(crate) mod vec_msg_id_as_vec_int {
         }
     }
 }
+
+mod rich_message;
+pub use rich_message::*;
+
+mod live_photo;
+pub use live_photo::*;
+
+mod video_quality;
+pub use video_quality::*;
+
+mod link;
+pub use link::*;
+
+mod poll_media;
+pub use poll_media::*;
+
+mod managed_bot_created;
+pub use managed_bot_created::*;
+
+mod managed_bot_updated;
+pub use managed_bot_updated::*;
+
+mod bot_subscription_updated;
+pub use bot_subscription_updated::*;
+
+mod message_generation_stopped;
+pub use message_generation_stopped::*;
+
+mod poll_option_added;
+pub use poll_option_added::*;
+
+mod poll_option_deleted;
+pub use poll_option_deleted::*;
+
+mod community_chat_added;
+pub use community_chat_added::*;
+
+mod community_chat_joined;
+pub use community_chat_joined::*;
+
+mod community_chat_removed;
+pub use community_chat_removed::*;
+
+mod user_profile_audios;
+pub use user_profile_audios::*;
+
+mod keyboard_button_request_managed_bot;
+pub use keyboard_button_request_managed_bot::*;
+
+mod disabled_button;
+pub use disabled_button::*;
+
+mod community;
+pub use community::*;
+
+mod user_rating;
+pub use user_rating::*;
+
+mod gift_background;
+pub use gift_background::*;
+
+mod unique_gift_colors;
+pub use unique_gift_colors::*;
+
+mod bot_access_settings;
+pub use bot_access_settings::*;
+
+mod chat_owner_left;
+pub use chat_owner_left::*;
+
+mod chat_owner_changed;
+pub use chat_owner_changed::*;
+
+mod sent_guest_message;
+pub use sent_guest_message::*;
+
+mod prepared_keyboard_button;
+pub use prepared_keyboard_button::*;
+
+mod button_style;
+pub use button_style::ButtonStyle;
+
+mod input_rich_message;
+pub use input_rich_message::*;
+
+mod input_file_collection;
+
+#[cfg(test)]
+mod api_10_3_tests;

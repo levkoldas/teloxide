@@ -29,6 +29,8 @@ impl_payload! {
             ///
             /// [inline keyboard]: https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating
             pub reply_markup: InlineKeyboardMarkup,
+            /// Pass True, if the caption must be shown above the message media. Supported only for animation, photo and video messages
+            pub show_caption_above_media: bool,
         }
     }
 }

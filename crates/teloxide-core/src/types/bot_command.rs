@@ -7,6 +7,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct BotCommand {
+    /// Optional. True, if the command sends an ephemeral message, which can be
+    /// seen only by the sender of the message and the bot
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub is_ephemeral: bool,
+
     /// Text of the command, 1-32 characters.
     ///
     /// Can contain only lowercase English letters, digits and underscores.
@@ -22,7 +27,7 @@ impl BotCommand {
         S1: Into<String>,
         S2: Into<String>,
     {
-        Self { command: command.into(), description: description.into() }
+        Self { is_ephemeral: false, command: command.into(), description: description.into() }
     }
 
     pub fn command<S>(mut self, val: S) -> Self
@@ -38,6 +43,14 @@ impl BotCommand {
         S: Into<String>,
     {
         self.description = val.into();
+        self
+    }
+}
+
+impl BotCommand {
+    /// Sets `is_ephemeral`.
+    pub fn is_ephemeral(mut self, value: bool) -> Self {
+        self.is_ephemeral = value;
         self
     }
 }

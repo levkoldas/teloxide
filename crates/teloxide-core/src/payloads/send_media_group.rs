@@ -8,6 +8,7 @@ use crate::types::{
 };
 
 impl_payload! {
+    @[multipart = media]
     /// Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of [`Message`]s that were sent is returned.
     ///
     /// ## Captions

@@ -28,6 +28,7 @@ pub struct PaidMediaInfo {
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum PaidMedia {
+    LivePhoto(PaidMediaLivePhoto),
     Preview(PaidMediaPreview),
     Photo(PaidMediaPhoto),
     Video(Box<PaidMediaVideo>),
@@ -92,6 +93,21 @@ impl PaidMedia {
     pub fn video(&self) -> Option<&Video> {
         match self {
             Self::Video(video) => Some(&video.video),
+            _ => None,
+        }
+    }
+}
+
+/// The paid media is a live photo.
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct PaidMediaLivePhoto {
+    pub live_photo: crate::types::LivePhoto,
+}
+impl PaidMedia {
+    pub fn live_photo(&self) -> Option<&crate::types::LivePhoto> {
+        match self {
+            Self::LivePhoto(media) => Some(&media.live_photo),
             _ => None,
         }
     }

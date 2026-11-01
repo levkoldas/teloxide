@@ -12,6 +12,7 @@ use crate::types::{InputFile, Seconds};
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum InputPaidMedia {
+    LivePhoto(crate::types::InputPaidMediaLivePhoto),
     Photo(InputPaidMediaPhoto),
     Video(Box<InputPaidMediaVideo>),
 }
@@ -19,7 +20,8 @@ pub enum InputPaidMedia {
 impl From<InputPaidMedia> for InputFile {
     fn from(media: InputPaidMedia) -> InputFile {
         match media {
-            InputPaidMedia::Photo(InputPaidMediaPhoto { media, .. }) => media,
+            InputPaidMedia::LivePhoto(crate::types::InputPaidMediaLivePhoto { media, .. })
+            | InputPaidMedia::Photo(InputPaidMediaPhoto { media, .. }) => media,
             InputPaidMedia::Video(input_paid_media_video) => input_paid_media_video.media,
         }
     }
@@ -30,28 +32,38 @@ impl InputPaidMedia {
     pub(crate) fn files(&self) -> impl Iterator<Item = &InputFile> {
         use InputPaidMedia::*;
 
-        let (media, thumbnail) = match self {
-            Photo(InputPaidMediaPhoto { media, .. }) => (media, None),
-            Video(input_paid_media_video) => {
-                (&input_paid_media_video.media, input_paid_media_video.thumbnail.as_ref())
+        let (media, thumbnail, cover) = match self {
+            LivePhoto(crate::types::InputPaidMediaLivePhoto { media, photo, .. }) => {
+                (media, None, Some(photo))
             }
+            Photo(InputPaidMediaPhoto { media, .. }) => (media, None, None),
+            Video(input_paid_media_video) => (
+                &input_paid_media_video.media,
+                input_paid_media_video.thumbnail.as_ref(),
+                input_paid_media_video.cover.as_ref(),
+            ),
         };
 
-        iter::once(media).chain(thumbnail)
+        iter::once(media).chain(thumbnail).chain(cover)
     }
 
     /// Returns an iterator of all files in this input media
     pub(crate) fn files_mut(&mut self) -> impl Iterator<Item = &mut InputFile> {
         use InputPaidMedia::*;
 
-        let (media, thumbnail) = match self {
-            Photo(InputPaidMediaPhoto { media, .. }) => (media, None),
-            Video(input_paid_media_video) => {
-                (&mut input_paid_media_video.media, input_paid_media_video.thumbnail.as_mut())
+        let (media, thumbnail, cover) = match self {
+            LivePhoto(crate::types::InputPaidMediaLivePhoto { media, photo, .. }) => {
+                (media, None, Some(photo))
             }
+            Photo(InputPaidMediaPhoto { media, .. }) => (media, None, None),
+            Video(input_paid_media_video) => (
+                &mut input_paid_media_video.media,
+                input_paid_media_video.thumbnail.as_mut(),
+                input_paid_media_video.cover.as_mut(),
+            ),
         };
 
-        iter::once(media).chain(thumbnail)
+        iter::once(media).chain(thumbnail).chain(cover)
     }
 }
 

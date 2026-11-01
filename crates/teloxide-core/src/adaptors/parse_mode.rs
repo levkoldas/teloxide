@@ -1,3 +1,8 @@
+use crate::payloads::{
+    AnswerGuestQuery, EditEphemeralMessageCaption, EditEphemeralMessageMedia,
+    EditEphemeralMessageText, SendLivePhoto, SendMessageDraft, SendRichMessage,
+    SendRichMessageDraft,
+};
 use std::future::IntoFuture;
 
 use url::Url;
@@ -136,6 +141,14 @@ impl<B> Requester for DefaultParseMode<B>
 where
     B: Requester,
     B::SendMessage: Clone,
+    B::SendLivePhoto: Clone,
+    B::SendMessageDraft: Clone,
+    B::AnswerGuestQuery: Clone,
+    B::EditEphemeralMessageMedia: Clone,
+    B::EditEphemeralMessageCaption: Clone,
+    B::EditEphemeralMessageText: Clone,
+    B::SendRichMessage: Clone,
+    B::SendRichMessageDraft: Clone,
     B::SendPhoto: Clone,
     B::SendVideo: Clone,
     B::SendAudio: Clone,
@@ -166,6 +179,16 @@ where
     type Err = B::Err;
 
     requester_forward! {
+        edit_ephemeral_message_text,
+        send_rich_message,
+        send_rich_message_draft,
+
+        send_live_photo,
+        send_message_draft,
+        answer_guest_query,
+        edit_ephemeral_message_media,
+        edit_ephemeral_message_caption,
+
         send_message,
         send_photo,
         send_video,
@@ -197,6 +220,26 @@ where
     }
 
     requester_forward! {
+        get_user_profile_audios,
+        set_chat_member_tag,
+        answer_chat_join_request_query,
+        send_chat_join_request_web_app,
+        get_user_personal_chat_messages,
+        get_managed_bot_token,
+        replace_managed_bot_token,
+        get_managed_bot_access_settings,
+        set_managed_bot_access_settings,
+        set_my_profile_photo,
+        remove_my_profile_photo,
+        get_user_gifts,
+        get_chat_gifts,
+        repost_story,
+        save_prepared_keyboard_button,
+        edit_ephemeral_message_reply_markup,
+        delete_ephemeral_message,
+        delete_message_reaction,
+        delete_all_message_reactions,
+
         get_me,
         log_out,
         close,
@@ -377,14 +420,17 @@ macro_rules! impl_visit_parse_modes {
 
 impl_visit_parse_modes! {
     SendMessage => [parse_mode],
+    SendLivePhoto => [parse_mode],
+    SendMessageDraft => [parse_mode],
+    EditEphemeralMessageCaption => [parse_mode],
     SendPhoto => [parse_mode],
     SendVideo => [parse_mode],
     SendAudio => [parse_mode],
     SendDocument => [parse_mode],
     SendAnimation => [parse_mode],
     SendVoice => [parse_mode],
-    EditMessageText => [parse_mode],
-    EditMessageTextInline => [parse_mode],
+
+
     EditMessageCaption => [parse_mode],
     EditMessageCaptionInline => [parse_mode],
     SendPaidMedia => [parse_mode],
@@ -396,7 +442,7 @@ impl_visit_parse_modes! {
     CopyMessage => [parse_mode],
     PostStory => [parse_mode],
     EditStory => [parse_mode],
-    SendPoll => [explanation_parse_mode],
+
 }
 
 impl VisitParseModes for AnswerInlineQuery {
@@ -455,52 +501,7 @@ fn visit_parse_modes_in_inline_query_result(
     result: &mut InlineQueryResult,
     visitor: &mut impl FnMut(&mut Option<ParseMode>),
 ) {
-    use InlineQueryResult::*;
-
-    let parse_mode = match result {
-        // Simply contain `parse_mode`
-        CachedAudio(r) => &mut r.parse_mode,
-        CachedDocument(r) => &mut r.parse_mode,
-        CachedGif(r) => &mut r.parse_mode,
-        CachedMpeg4Gif(r) => &mut r.parse_mode,
-        CachedPhoto(r) => &mut r.parse_mode,
-        CachedVideo(r) => &mut r.parse_mode,
-        CachedVoice(r) => &mut r.parse_mode,
-        Audio(r) => &mut r.parse_mode,
-        Document(r) => &mut r.parse_mode,
-        Gif(r) => &mut r.parse_mode,
-        Mpeg4Gif(r) => &mut r.parse_mode,
-        Photo(r) => &mut r.parse_mode,
-        Video(r) => &mut r.parse_mode,
-        Voice(r) => &mut r.parse_mode,
-
-        // Can contain parse mode if `InputMessageContent::Text`
-        CachedSticker(r) => match &mut r.input_message_content {
-            Some(InputMessageContent::Text(t)) => &mut t.parse_mode,
-            _ => return,
-        },
-        Article(r) => match &mut r.input_message_content {
-            InputMessageContent::Text(t) => &mut t.parse_mode,
-            _ => return,
-        },
-        Contact(r) => match &mut r.input_message_content {
-            Some(InputMessageContent::Text(t)) => &mut t.parse_mode,
-            _ => return,
-        },
-        Location(r) => match &mut r.input_message_content {
-            Some(InputMessageContent::Text(t)) => &mut t.parse_mode,
-            _ => return,
-        },
-        Venue(r) => match &mut r.input_message_content {
-            Some(InputMessageContent::Text(t)) => &mut t.parse_mode,
-            _ => return,
-        },
-
-        // Can't contain `parse_mode` at all
-        Game(_r) => return,
-    };
-
-    visitor(parse_mode);
+    result.visit_nested(visitor);
 }
 
 fn visit_parse_modes_in_input_media(
@@ -510,6 +511,7 @@ fn visit_parse_modes_in_input_media(
     use InputMedia::*;
 
     let parse_mode = match media {
+        LivePhoto(m) => &mut m.parse_mode,
         Photo(m) => &mut m.parse_mode,
         Video(m) => &mut m.parse_mode,
         Animation(m) => &mut m.parse_mode,
@@ -518,4 +520,412 @@ fn visit_parse_modes_in_input_media(
     };
 
     visitor(parse_mode);
+}
+
+impl VisitParseModes for AnswerGuestQuery {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        visit_parse_modes_in_inline_query_result(&mut self.result, &mut visitor);
+    }
+}
+
+impl VisitParseModes for EditEphemeralMessageMedia {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        visit_parse_modes_in_input_media(&mut self.media, &mut visitor);
+    }
+}
+
+// Recursion uses a borrowed visitor so its type does not grow with every block.
+trait VisitNestedParseModes {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>));
+}
+impl<T: VisitNestedParseModes> VisitNestedParseModes for Option<T> {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        if let Some(value) = self {
+            value.visit_nested(visitor);
+        }
+    }
+}
+impl<T: VisitNestedParseModes> VisitNestedParseModes for Vec<T> {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        for value in self {
+            value.visit_nested(visitor);
+        }
+    }
+}
+impl<T: VisitNestedParseModes> VisitNestedParseModes for Box<T> {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        (**self).visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMedia {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        match self {
+            Self::Animation(value) => value.visit_nested(visitor),
+            Self::Audio(value) => value.visit_nested(visitor),
+            Self::Document(value) => value.visit_nested(visitor),
+            Self::LivePhoto(value) => value.visit_nested(visitor),
+            Self::Photo(value) => value.visit_nested(visitor),
+            Self::Video(value) => value.visit_nested(visitor),
+        }
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMediaAnimation {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMediaAudio {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMediaDocument {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMediaLivePhoto {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMediaPhoto {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMediaVideo {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputMediaVoiceNote {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputPollMedia {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        match self {
+            Self::Animation(value) => value.visit_nested(visitor),
+            Self::Audio(value) => value.visit_nested(visitor),
+            Self::Document(value) => value.visit_nested(visitor),
+            Self::LivePhoto(value) => value.visit_nested(visitor),
+            Self::Location(_) => {}
+            Self::Photo(value) => value.visit_nested(visitor),
+            Self::Venue(_) => {}
+            Self::Video(value) => value.visit_nested(visitor),
+        }
+    }
+}
+impl VisitNestedParseModes for crate::types::InputPollOptionMedia {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        match self {
+            Self::Animation(value) => value.visit_nested(visitor),
+            Self::Link(_) => {}
+            Self::LivePhoto(value) => value.visit_nested(visitor),
+            Self::Location(_) => {}
+            Self::Photo(value) => value.visit_nested(visitor),
+            Self::Sticker(_) => {}
+            Self::Venue(_) => {}
+            Self::Video(value) => value.visit_nested(visitor),
+        }
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlock {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        match self {
+            Self::Paragraph(_) => {}
+            Self::SectionHeading(_) => {}
+            Self::Preformatted(_) => {}
+            Self::Footer(_) => {}
+            Self::Divider(_) => {}
+            Self::MathematicalExpression(_) => {}
+            Self::Anchor(_) => {}
+            Self::List(value) => value.visit_nested(visitor),
+            Self::BlockQuotation(value) => value.visit_nested(visitor),
+            Self::ExpandableBlockQuotation(_) => {}
+            Self::PullQuotation(_) => {}
+            Self::Collage(value) => value.visit_nested(visitor),
+            Self::Slideshow(value) => value.visit_nested(visitor),
+            Self::Table(_) => {}
+            Self::Details(value) => value.visit_nested(visitor),
+            Self::Map(_) => {}
+            Self::Buttons(_) => {}
+            Self::Animation(value) => value.visit_nested(visitor),
+            Self::Audio(value) => value.visit_nested(visitor),
+            Self::Document(value) => value.visit_nested(visitor),
+            Self::Photo(value) => value.visit_nested(visitor),
+            Self::Video(value) => value.visit_nested(visitor),
+            Self::VoiceNote(value) => value.visit_nested(visitor),
+            Self::Thinking(_) => {}
+        }
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockAnimation {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.animation.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockAudio {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.audio.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockBlockQuotation {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.blocks.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockCollage {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.blocks.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockDetails {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.blocks.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockDocument {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.document.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockList {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.items.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockListItem {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.blocks.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockPhoto {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.photo.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockSlideshow {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.blocks.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockVideo {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.video.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichBlockVoiceNote {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.voice_note.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichMedia {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        match self {
+            Self::Animation(value) => value.visit_nested(visitor),
+            Self::Audio(value) => value.visit_nested(visitor),
+            Self::Document(value) => value.visit_nested(visitor),
+            Self::Photo(value) => value.visit_nested(visitor),
+            Self::Video(value) => value.visit_nested(visitor),
+            Self::VoiceNote(value) => value.visit_nested(visitor),
+        }
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichMessage {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.blocks.visit_nested(visitor);
+        self.media.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichMessageContent {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.rich_message.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for crate::types::InputRichMessageMedia {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        self.media.visit_nested(visitor);
+    }
+}
+
+impl VisitNestedParseModes for crate::types::InputMessageContent {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        match self {
+            Self::Text(content) => visitor(&mut content.parse_mode),
+            Self::RichMessage(content) => content.visit_nested(visitor),
+            _ => {}
+        }
+    }
+}
+impl VisitNestedParseModes for crate::types::InputPollOption {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        use crate::types::InputPollOptionFormatting;
+        if self.formatting.is_none() {
+            let mut mode = None;
+            visitor(&mut mode);
+            self.formatting = mode.map(InputPollOptionFormatting::TextParseMode);
+        }
+        self.media.visit_nested(visitor);
+    }
+}
+impl VisitNestedParseModes for InlineQueryResult {
+    fn visit_nested(&mut self, visitor: &mut dyn FnMut(&mut Option<ParseMode>)) {
+        match self {
+            Self::CachedAudio(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::CachedDocument(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::CachedGif(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::CachedMpeg4Gif(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::CachedPhoto(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::CachedSticker(value) => {
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::CachedVideo(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::CachedVoice(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Article(value) => {
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Audio(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Contact(value) => {
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Game(_) => {}
+            Self::Document(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Gif(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Location(value) => {
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Mpeg4Gif(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Photo(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Venue(value) => {
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Video(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+            Self::Voice(value) => {
+                visitor(&mut value.parse_mode);
+                value.input_message_content.visit_nested(visitor);
+            }
+        }
+    }
+}
+impl VisitParseModes for EditMessageText {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+        self.rich_message.visit_nested(&mut visitor);
+    }
+}
+impl VisitParseModes for EditMessageTextInline {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.parse_mode);
+        self.rich_message.visit_nested(&mut visitor);
+    }
+}
+impl VisitParseModes for SendPoll {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        visitor(&mut self.question_parse_mode);
+        visitor(&mut self.explanation_parse_mode);
+        visitor(&mut self.description_parse_mode);
+        self.options.visit_nested(&mut visitor);
+        self.media.visit_nested(&mut visitor);
+        self.explanation_media.visit_nested(&mut visitor);
+    }
+}
+impl VisitParseModes for SendRichMessage {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        self.rich_message.visit_nested(&mut visitor);
+    }
+}
+impl VisitParseModes for SendRichMessageDraft {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        self.rich_message.visit_nested(&mut visitor);
+    }
+}
+impl VisitParseModes for EditEphemeralMessageText {
+    fn visit_parse_modes(&mut self, mut visitor: impl FnMut(&mut Option<ParseMode>)) {
+        self.rich_message.visit_nested(&mut visitor);
+        visitor(&mut self.parse_mode);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn default_parse_mode_reaches_nested_rich_and_poll_media() {
+        let photo = || {
+            InputMediaPhoto::new(InputFile::file_id(FileId("photo".into())))
+                .caption("<b>caption</b>")
+        };
+        let rich = InputRichMessage::new().blocks(vec![InputRichBlockDetails::new(
+            "Details".into(),
+            vec![InputRichBlockPhoto::new(photo()).into()],
+        )
+        .into()]);
+        let mut rich_payload = SendRichMessage::new(ChatId(1), rich);
+        rich_payload.visit_parse_modes(|mode| {
+            mode.get_or_insert(ParseMode::Html);
+        });
+        let encoded = serde_json::to_value(rich_payload).unwrap();
+        assert_eq!(
+            encoded["rich_message"]["blocks"][0]["blocks"][0]["photo"]["parse_mode"],
+            "HTML"
+        );
+
+        let mut poll = SendPoll::new(
+            ChatId(1),
+            "Question",
+            [InputPollOption::new("Option").text_entities(vec![]).media(photo().into())],
+        );
+        poll.visit_parse_modes(|mode| {
+            mode.get_or_insert(ParseMode::Html);
+        });
+        let encoded = serde_json::to_value(poll).unwrap();
+        assert_eq!(encoded["question_parse_mode"], "HTML");
+        assert_eq!(encoded["options"][0]["text_entities"], json!([]));
+        assert!(encoded["options"][0].get("text_parse_mode").is_none());
+        assert_eq!(encoded["options"][0]["media"]["parse_mode"], "HTML");
+    }
 }

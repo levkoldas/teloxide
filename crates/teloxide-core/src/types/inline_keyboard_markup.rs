@@ -15,6 +15,13 @@ use crate::types::InlineKeyboardButton;
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize, Default)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct InlineKeyboardMarkup {
+    /// Optional. Pass True if the reply interface must be shown to the user, as
+    /// if they had manually selected the bot's message and tapped 'Reply'.
+    /// The value of the field can't be changed when the inline keyboard is
+    /// edited.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub force_reply: bool,
+
     /// Array of button rows, each represented by an array of
     /// [`InlineKeyboardButton`] objects.
     ///
@@ -39,6 +46,7 @@ impl InlineKeyboardMarkup {
         I::Item: IntoIterator<Item = InlineKeyboardButton>,
     {
         Self {
+            force_reply: false,
             inline_keyboard: inline_keyboard
                 .into_iter()
                 .map(<_>::into_iter)
@@ -74,6 +82,14 @@ impl InlineKeyboardMarkup {
     }
 }
 
+impl InlineKeyboardMarkup {
+    /// Sets `force_reply`.
+    pub fn force_reply(mut self, value: bool) -> Self {
+        self.force_reply = value;
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,7 +106,10 @@ mod tests {
         let markup =
             InlineKeyboardMarkup::default().append_row(vec![button1.clone(), button2.clone()]);
 
-        let expected = InlineKeyboardMarkup { inline_keyboard: vec![vec![button1, button2]] };
+        let expected = InlineKeyboardMarkup {
+            force_reply: false,
+            inline_keyboard: vec![vec![button1, button2]],
+        };
 
         assert_eq!(markup, expected);
     }
@@ -104,7 +123,10 @@ mod tests {
             .append_row(vec![button1.clone()])
             .append_to_row(0, button2.clone());
 
-        let expected = InlineKeyboardMarkup { inline_keyboard: vec![vec![button1, button2]] };
+        let expected = InlineKeyboardMarkup {
+            force_reply: false,
+            inline_keyboard: vec![vec![button1, button2]],
+        };
 
         assert_eq!(markup, expected);
     }
@@ -118,7 +140,10 @@ mod tests {
             .append_row(vec![button1.clone()])
             .append_to_row(1, button2.clone());
 
-        let expected = InlineKeyboardMarkup { inline_keyboard: vec![vec![button1], vec![button2]] };
+        let expected = InlineKeyboardMarkup {
+            force_reply: false,
+            inline_keyboard: vec![vec![button1], vec![button2]],
+        };
 
         assert_eq!(markup, expected);
     }

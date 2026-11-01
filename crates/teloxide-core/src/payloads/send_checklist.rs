@@ -3,7 +3,8 @@
 use serde::Serialize;
 
 use crate::types::{
-    BusinessConnectionId, ChatId, EffectId, InputChecklist, Message, ReplyMarkup, ReplyParameters,
+    BusinessConnectionId, EffectId, InputChecklist, Message, Recipient, ReplyMarkup,
+    ReplyParameters,
 };
 
 impl_payload! {
@@ -16,7 +17,7 @@ impl_payload! {
             /// Unique identifier of the business connection on behalf of which the message will be sent
             pub business_connection_id: BusinessConnectionId,
             /// Unique identifier for the target chat
-            pub chat_id: ChatId [into],
+            pub chat_id: Recipient [into],
             /// Checklist to send
             pub checklist: InputChecklist,
         }

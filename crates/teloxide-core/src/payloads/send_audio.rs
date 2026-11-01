@@ -3,8 +3,8 @@
 use serde::Serialize;
 
 use crate::types::{
-    BusinessConnectionId, EffectId, InputFile, Message, MessageEntity, ParseMode, Recipient,
-    ReplyMarkup, ReplyParameters, SuggestedPostParameters, ThreadId, TopicId,
+    BusinessConnectionId, EffectId, EphemeralMessageParameters, InputFile, Message, MessageEntity,
+    ParseMode, Recipient, ReplyMarkup, ReplyParameters, SuggestedPostParameters, ThreadId, TopicId,
 };
 
 impl_payload! {
@@ -26,6 +26,8 @@ impl_payload! {
             pub audio: InputFile,
         }
         optional {
+            /// A JSON-serialized object containing the parameters of the ephemeral message to send
+            pub ephemeral_message_parameters: EphemeralMessageParameters,
             /// Unique identifier of the business connection on behalf of which the message will be sent
             pub business_connection_id: BusinessConnectionId,
             /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only

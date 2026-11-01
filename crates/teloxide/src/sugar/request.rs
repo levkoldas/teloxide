@@ -13,10 +13,10 @@ macro_rules! impl_request_reply_ext {
             {
                 fn reply_to<M>(self, message_id: M) -> Self
                 where
-                    M: Into<MessageId>,
+                    M: Into<ReplyParameters>,
                     Self: Sized,
                 {
-                    self.reply_parameters(ReplyParameters::new(message_id.into()))
+                    self.reply_parameters(message_id.into())
                 }
             }
         )*
@@ -51,10 +51,12 @@ macro_rules! impl_request_link_preview_ext {
 /// `.reply_to(msg)` syntax sugar for requests.
 pub trait RequestReplyExt<P> {
     /// Replaces `.reply_parameters(ReplyParameters::new(msg.id))`
-    /// with `.reply_to(msg.id)` or `.reply_to(msg)`
+    /// with `.reply_to(msg.id)` or `.reply_to(&msg)`. Ephemeral messages
+    /// use their ephemeral identifier. A `ReplyParameters` value is also
+    /// accepted.
     fn reply_to<M>(self, message_id: M) -> Self
     where
-        M: Into<MessageId>,
+        M: Into<ReplyParameters>,
         Self: Sized;
 }
 
@@ -83,6 +85,10 @@ pub trait RequestLinkPreviewExt<P> {
 // https://github.com/rust-lang/rfcs/pull/1672
 
 impl_request_reply_ext! {
+    (SendLivePhoto, SendLivePhotoSetters),
+    (SendRichMessage, SendRichMessageSetters),
+    (SendChecklist, SendChecklistSetters),
+    (SendPaidMedia, SendPaidMediaSetters),
     (SendDice, SendDiceSetters),
     (SendInvoice, SendInvoiceSetters),
     (SendPoll, SendPollSetters),
@@ -105,7 +111,9 @@ impl_request_reply_ext! {
 
 impl_request_link_preview_ext! {
     (SendMessage, SendMessageSetters),
-    (EditMessageText, EditMessageTextSetters)
+    (EditMessageText, EditMessageTextSetters),
+    (EditMessageTextInline, EditMessageTextInlineSetters),
+    (EditEphemeralMessageText, EditEphemeralMessageTextSetters)
 }
 
 #[cfg(test)]
@@ -114,6 +122,35 @@ mod tests {
 
     use super::*;
     use teloxide_core::{prelude::*, Bot};
+
+    #[test]
+    fn reply_helpers_preserve_ephemeral_targets_and_support_new_send_methods() {
+        let bot = Bot::new("TOKEN");
+        let message: Message = serde_json::from_value(serde_json::json!({
+            "message_id": 0, "ephemeral_message_id": 4_300_000_000_i64,
+            "date": 1, "chat": {"id": 1, "type": "private", "first_name": "Ada"},
+            "text": "ephemeral"
+        }))
+        .unwrap();
+        let reply = bot.send_message(ChatId(1), "answer").reply_to(&message);
+        assert_eq!(reply.reply_parameters.as_ref().unwrap().message_id, None);
+        assert_eq!(
+            reply.reply_parameters.as_ref().unwrap().ephemeral_message_id,
+            Some(4_300_000_000)
+        );
+        let rich = bot
+            .send_rich_message(ChatId(1), InputRichMessage::new().html("answer"))
+            .reply_to(message);
+        assert_eq!(rich.reply_parameters, reply.reply_parameters);
+        let live = bot
+            .send_live_photo(
+                ChatId(1),
+                InputFile::file_id("video".into()),
+                InputFile::file_id("photo".into()),
+            )
+            .reply_to(MessageId(7));
+        assert_eq!(live.reply_parameters.as_ref().unwrap().message_id, Some(MessageId(7)));
+    }
 
     #[test]
     fn test_reply_to() {

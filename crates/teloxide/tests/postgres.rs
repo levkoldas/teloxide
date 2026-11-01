@@ -7,13 +7,20 @@ use teloxide::{
     types::ChatId,
 };
 
+// Override the server URL to run against an isolated local test cluster.
+fn database_url(database: &str) -> String {
+    let server = std::env::var("TELOXIDE_TEST_POSTGRES_URL")
+        .unwrap_or_else(|_| "postgres://teloxide:rewrite_it_in_rust@localhost:5432".into());
+    format!("{}/{database}", server.trim_end_matches('/'))
+}
+
 // These examples are meant to run under the CI with the postgres service
 // Were checked locally
 #[tokio::test]
 #[cfg_attr(not(CI_POSTGRES), ignore)]
 async fn test_postgres_json() {
     let storage = PostgresStorage::open(
-        "postgres://teloxide:rewrite_it_in_rust@localhost:5432/test_postgres_json",
+        &database_url("test_postgres_json"),
         1,
         teloxide::dispatching::dialogue::serializer::Json,
     )
@@ -27,7 +34,7 @@ async fn test_postgres_json() {
 #[cfg_attr(not(CI_POSTGRES), ignore)]
 async fn test_postgres_bincode() {
     let storage = PostgresStorage::open(
-        "postgres://teloxide:rewrite_it_in_rust@localhost:5432/test_postgres_bincode",
+        &database_url("test_postgres_bincode"),
         1,
         teloxide::dispatching::dialogue::serializer::Bincode,
     )
@@ -41,7 +48,7 @@ async fn test_postgres_bincode() {
 #[cfg_attr(not(CI_POSTGRES), ignore)]
 async fn test_postgres_cbor() {
     let storage = PostgresStorage::open(
-        "postgres://teloxide:rewrite_it_in_rust@localhost:5432/test_postgres_cbor",
+        &database_url("test_postgres_cbor"),
         1,
         teloxide::dispatching::dialogue::serializer::Cbor,
     )

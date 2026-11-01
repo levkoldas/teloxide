@@ -126,8 +126,8 @@ where
     let (listener, stop_flag, router) = axum_no_setup(options);
 
     let stop_flag = stop_flag.then(move |()| async move {
-        // This assignment is needed to not require `R: Sync` since without it `&bot`
-        // temporary lives across `.await` points.
+        // This assignment is needed to not require `R: Sync` since without it
+        // `&bot` temporary lives across `.await` points.
         let req = bot.delete_webhook().send();
         let res = req.await;
         if let Err(err) = res {
@@ -177,8 +177,9 @@ pub fn axum_no_setup(
 
         let tx = match tx.get() {
             None => return StatusCode::SERVICE_UNAVAILABLE,
-            // Do not process updates after `.stop()` is called even if the server is still
-            // running (useful for when you need to stop the bot but can't stop the server).
+            // Do not process updates after `.stop()` is called even if the
+            // server is still running (useful for when you need to stop the bot
+            // but can't stop the server).
             _ if flag.is_stopped() => {
                 tx.close();
                 return StatusCode::SERVICE_UNAVAILABLE;

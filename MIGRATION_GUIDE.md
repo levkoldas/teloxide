@@ -3,6 +3,79 @@ Note that the list of required changes is not fully exhaustive and it may lack s
 
 ## unreleased
 
+Use Rust 1.96 or newer with the refreshed dependencies.
+
+The `Bincode` dialogue serializer now uses bincode 2.0.1 with the legacy
+fixed-width encoding. Stored dialogue bytes remain compatible for unchanged
+dialogue data types; no serializer-format migration is needed. Dialogues that
+persist changed Telegram structs may need an application-level migration.
+Code naming the serializer error type directly
+must use `teloxide::dispatching::dialogue::serializer::BincodeError` in place of
+`bincode::Error`. Its `Encode` and `Decode` variants preserve the underlying errors.
+
+The Redis storage error wraps errors from Redis 1.x via deadpool-redis 0.23, and
+SQL storage errors now wrap SQLx 0.9 errors. Applications that name or match these
+upstream error types should update their direct dependencies accordingly.
+
+### Bot API 10.3
+
+`set_game_score` accepts `Into<ChatId>` instead of `u32`, supporting negative
+supergroup IDs and large private-chat IDs. Inline text edits now use
+`link_preview_options` instead of `disable_web_page_preview`; the
+`.disable_link_preview(true)` helper is also available. Inline caption edits
+accept `show_caption_above_media`, and inline live-location edits accept
+`live_period`.
+
+Text edits now select their content with a setter, because Telegram accepts either
+plain text or a rich message:
+
+```diff
+-bot.edit_message_text(chat_id, message_id, "Hello").await?;
++bot.edit_message_text(chat_id, message_id).text("Hello").await?;
+```
+
+Use `.rich_message(InputRichMessage::new().html("<p>Hello</p>"))` to edit rich
+content instead. `edit_message_text_inline` follows the same pattern.
+`BotMessagesExt::edit_text(&message, text)` retains its convenience signature.
+
+`ReplyParameters::message_id` is now `Option<MessageId>`.
+`ReplyParameters::new(message_id)` still constructs a normal reply. To reply to an
+ephemeral message, use `ReplyParameters::default().ephemeral_message_id(id)`.
+Ephemeral identifiers are 64-bit integers. `.reply_to(&message)` selects the
+appropriate normal or ephemeral identifier. Its generic argument now converts
+into `ReplyParameters`, so custom types implementing only `Into<MessageId>`
+should convert to `MessageId` before calling it. Send methods accept
+`EphemeralMessageParameters` for choosing the receiver and callback replacement.
+
+Polls use `correct_option_ids` instead of `correct_option_id`; pass an iterator to
+the request setter. Poll options have persistent string identifiers, and poll
+answers expose both positional and persistent identifiers. The `send_poll`
+`open_period` setter now takes `u32` and supports periods up to 2,628,000 seconds.
+`Poll`, `PollOption`, and `InputPollOption` no longer implement `Eq` and `Hash`
+because their media can contain floating-point coordinates.
+
+`UniqueGift` requires `gift_id`. `UniqueGiftInfo::last_resale_star_count` is replaced
+by `last_resale_currency` and `last_resale_amount`; amounts can represent Telegram
+Stars or TON nanograms. `get_business_account_gifts().exclude_limited(...)` is
+replaced by `exclude_limited_upgradable(...)` and
+`exclude_limited_non_upgradable(...)`.
+
+`Me::username`, `Me::mention`, and `Me::tme_url` now return `Option`: bots may disable
+their main username. Command filters accept bare commands when no username is
+reported, and filters requiring a mention skip such bots.
+
+Update exhaustive matches for the new `UpdateKind`, `MediaKind`, `MessageKind`,
+`InputMedia`, `InputPaidMedia`, `InputMessageContent`, `MessageEntityKind`,
+`ButtonRequest`, and `InlineKeyboardButtonKind` variants. Struct literals may need
+the newly added fields. Prefer existing constructors and setters where available.
+`ButtonStyle` represents the three standard keyboard colors.
+
+Rich messages, poll media, profile photos, stories, media edits, and inline/guest/
+Web App query results collect nested uploads automatically. Several `Bot` request
+associated types therefore use `MultipartRequest` instead of `JsonRequest`.
+Applications using the `Requester` trait normally need no change; applications
+naming concrete request types should update those annotations.
+
 ## 0.16 -> 0.17
 
 ### teloxide

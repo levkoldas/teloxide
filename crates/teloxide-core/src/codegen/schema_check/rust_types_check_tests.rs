@@ -56,6 +56,26 @@ fn test_rust_objects() {
             object: "User".to_owned(),
             field_name: "can_join_groups".to_owned(),
         },
+        Exception::IgnoreObjectField {
+            object: "User".to_owned(),
+            field_name: "supports_join_request_queries".to_owned(),
+        },
+        Exception::IgnoreObjectField {
+            object: "User".to_owned(),
+            field_name: "can_manage_bots".to_owned(),
+        },
+        Exception::IgnoreObjectField {
+            object: "User".to_owned(),
+            field_name: "allows_users_to_create_topics".to_owned(),
+        },
+        Exception::IgnoreObjectField {
+            object: "User".to_owned(),
+            field_name: "has_topics_enabled".to_owned(),
+        },
+        Exception::IgnoreObjectField {
+            object: "User".to_owned(),
+            field_name: "supports_guest_queries".to_owned(),
+        },
         Exception::IgnoreFieldRequiredObjectName {
             object: "File".to_owned(),
             field_name: "file_path".to_owned(),
@@ -89,6 +109,14 @@ fn test_rust_objects() {
             field_name: "date".to_owned(),
         },
         Exception::IgnoreFieldRequiredName { field_name: "file_size".to_owned() },
+        Exception::IgnoreFieldRequiredObjectName {
+            object: "PollAnswer".to_owned(),
+            field_name: "option_persistent_ids".to_owned(),
+        },
+        Exception::IgnoreFieldRequiredObjectName {
+            object: "PollOption".to_owned(),
+            field_name: "persistent_id".to_owned(),
+        },
         Exception::IgnoreFieldName { field_name: "source".to_owned() },
         Exception::IgnoreFieldName { field_name: "sticker_type".to_owned() },
         Exception::IgnoreFieldName { field_name: "transaction_type".to_owned() },
@@ -97,6 +125,7 @@ fn test_rust_objects() {
 
     let mut errors = vec![];
 
+    check_object(api_schema.clone(), schema_for!(Me), "User".to_owned(), &mut errors, &exceptions);
     check_object(
         api_schema.clone(),
         schema_for!(WebhookInfo),
@@ -183,6 +212,13 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(EphemeralMessageParameters),
+        "EphemeralMessageParameters".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(MessageOrigin),
         "MessageOrigin".to_owned(),
         &mut errors,
@@ -218,8 +254,22 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(LivePhoto),
+        "LivePhoto".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(Story),
         "Story".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(VideoQuality),
+        "VideoQuality".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -260,8 +310,8 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
-        schema_for!(PaidMediaPreview),
-        "PaidMediaPreview".to_owned(),
+        schema_for!(PaidMediaLivePhoto),
+        "PaidMediaLivePhoto".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -269,6 +319,13 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(PaidMediaPhoto),
         "PaidMediaPhoto".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(PaidMediaPreview),
+        "PaidMediaPreview".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -290,6 +347,34 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(Dice),
         "Dice".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(Link),
+        "Link".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(PollMedia),
+        "PollMedia".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputPollMedia),
+        "InputPollMedia".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputPollOptionMedia),
+        "InputPollOptionMedia".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -351,20 +436,6 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
-        schema_for!(ChecklistTasksDone),
-        "ChecklistTasksDone".to_owned(),
-        &mut errors,
-        &exceptions,
-    );
-    check_object(
-        api_schema.clone(),
-        schema_for!(ChecklistTasksAdded),
-        "ChecklistTasksAdded".to_owned(),
-        &mut errors,
-        &exceptions,
-    );
-    check_object(
-        api_schema.clone(),
         schema_for!(Location),
         "Location".to_owned(),
         &mut errors,
@@ -395,6 +466,48 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(MessageAutoDeleteTimerChanged),
         "MessageAutoDeleteTimerChanged".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(ManagedBotCreated),
+        "ManagedBotCreated".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(ManagedBotUpdated),
+        "ManagedBotUpdated".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(BotSubscriptionUpdated),
+        "BotSubscriptionUpdated".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(MessageGenerationStopped),
+        "MessageGenerationStopped".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(PollOptionAdded),
+        "PollOptionAdded".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(PollOptionDeleted),
+        "PollOptionDeleted".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -472,6 +585,41 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(ChatBackground),
         "ChatBackground".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(ChecklistTasksDone),
+        "ChecklistTasksDone".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(ChecklistTasksAdded),
+        "ChecklistTasksAdded".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(CommunityChatAdded),
+        "CommunityChatAdded".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(CommunityChatJoined),
+        "CommunityChatJoined".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(CommunityChatRemoved),
+        "CommunityChatRemoved".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -694,6 +842,13 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(UserProfileAudios),
+        "UserProfileAudios".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(File),
         "File".to_owned(),
         &mut errors,
@@ -731,6 +886,13 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(KeyboardButtonRequestChat),
         "KeyboardButtonRequestChat".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(KeyboardButtonRequestManagedBot),
+        "KeyboardButtonRequestManagedBot".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -785,6 +947,13 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(DisabledButton),
+        "DisabledButton".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(CallbackQuery),
         "CallbackQuery".to_owned(),
         &mut errors,
@@ -794,6 +963,13 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(ForceReply),
         "ForceReply".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(Community),
+        "Community".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -878,6 +1054,13 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(BusinessOpeningHours),
         "BusinessOpeningHours".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(UserRating),
+        "UserRating".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -988,6 +1171,13 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(GiftBackground),
+        "GiftBackground".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(Gift),
         "Gift".to_owned(),
         &mut errors,
@@ -1025,6 +1215,13 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(UniqueGiftBackdrop),
         "UniqueGiftBackdrop".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(UniqueGiftColors),
+        "UniqueGiftColors".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -1074,6 +1271,13 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(OwnedGifts),
         "OwnedGifts".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(BotAccessSettings),
+        "BotAccessSettings".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -1184,6 +1388,20 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(ChatOwnerLeft),
+        "ChatOwnerLeft".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(ChatOwnerChanged),
+        "ChatOwnerChanged".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(UserChatBoosts),
         "UserChatBoosts".to_owned(),
         &mut errors,
@@ -1212,6 +1430,34 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(SentWebAppMessage),
+        "SentWebAppMessage".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(SentGuestMessage),
+        "SentGuestMessage".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(PreparedInlineMessage),
+        "PreparedInlineMessage".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(PreparedKeyboardButton),
+        "PreparedKeyboardButton".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(ResponseParameters),
         "ResponseParameters".to_owned(),
         &mut errors,
@@ -1221,20 +1467,6 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(InputMedia),
         "InputMedia".to_owned(),
-        &mut errors,
-        &exceptions,
-    );
-    check_object(
-        api_schema.clone(),
-        schema_for!(InputMediaPhoto),
-        "InputMediaPhoto".to_owned(),
-        &mut errors,
-        &exceptions,
-    );
-    check_object(
-        api_schema.clone(),
-        schema_for!(InputMediaVideo),
-        "InputMediaVideo".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -1261,6 +1493,62 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(InputMediaLink),
+        "InputMediaLink".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputMediaLivePhoto),
+        "InputMediaLivePhoto".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputMediaLocation),
+        "InputMediaLocation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputMediaPhoto),
+        "InputMediaPhoto".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputMediaSticker),
+        "InputMediaSticker".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputMediaVenue),
+        "InputMediaVenue".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputMediaVideo),
+        "InputMediaVideo".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputMediaVoiceNote),
+        "InputMediaVoiceNote".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(InputFile),
         "InputFile".to_owned(),
         &mut errors,
@@ -1270,6 +1558,13 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(InputPaidMedia),
         "InputPaidMedia".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputPaidMediaLivePhoto),
+        "InputPaidMediaLivePhoto".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -1354,6 +1649,601 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(InputSticker),
         "InputSticker".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichMessage),
+        "RichMessage".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichMessage),
+        "InputRichMessage".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichMessageMedia),
+        "InputRichMessageMedia".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichMessageButton),
+        "RichMessageButton".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichText),
+        "RichText".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextBold),
+        "RichTextBold".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextItalic),
+        "RichTextItalic".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextUnderline),
+        "RichTextUnderline".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextStrikethrough),
+        "RichTextStrikethrough".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextSpoiler),
+        "RichTextSpoiler".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextDateTime),
+        "RichTextDateTime".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextTextMention),
+        "RichTextTextMention".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextSubscript),
+        "RichTextSubscript".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextSuperscript),
+        "RichTextSuperscript".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextMarked),
+        "RichTextMarked".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextCode),
+        "RichTextCode".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextCustomEmoji),
+        "RichTextCustomEmoji".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextMathematicalExpression),
+        "RichTextMathematicalExpression".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextUrl),
+        "RichTextUrl".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextEmailAddress),
+        "RichTextEmailAddress".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextPhoneNumber),
+        "RichTextPhoneNumber".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextBankCardNumber),
+        "RichTextBankCardNumber".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextMention),
+        "RichTextMention".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextHashtag),
+        "RichTextHashtag".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextCashtag),
+        "RichTextCashtag".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextBotCommand),
+        "RichTextBotCommand".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextButton),
+        "RichTextButton".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextAnchor),
+        "RichTextAnchor".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextAnchorLink),
+        "RichTextAnchorLink".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextReference),
+        "RichTextReference".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichTextReferenceLink),
+        "RichTextReferenceLink".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockCaption),
+        "RichBlockCaption".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockTableCell),
+        "RichBlockTableCell".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockListItem),
+        "RichBlockListItem".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlock),
+        "RichBlock".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockParagraph),
+        "RichBlockParagraph".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockSectionHeading),
+        "RichBlockSectionHeading".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockPreformatted),
+        "RichBlockPreformatted".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockFooter),
+        "RichBlockFooter".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockDivider),
+        "RichBlockDivider".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockMathematicalExpression),
+        "RichBlockMathematicalExpression".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockAnchor),
+        "RichBlockAnchor".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockList),
+        "RichBlockList".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockBlockQuotation),
+        "RichBlockBlockQuotation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockExpandableBlockQuotation),
+        "RichBlockExpandableBlockQuotation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockPullQuotation),
+        "RichBlockPullQuotation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockCollage),
+        "RichBlockCollage".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockSlideshow),
+        "RichBlockSlideshow".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockTable),
+        "RichBlockTable".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockDetails),
+        "RichBlockDetails".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockMap),
+        "RichBlockMap".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockButtons),
+        "RichBlockButtons".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockAnimation),
+        "RichBlockAnimation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockAudio),
+        "RichBlockAudio".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockDocument),
+        "RichBlockDocument".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockPhoto),
+        "RichBlockPhoto".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockVideo),
+        "RichBlockVideo".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockVoiceNote),
+        "RichBlockVoiceNote".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(RichBlockThinking),
+        "RichBlockThinking".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockListItem),
+        "InputRichBlockListItem".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlock),
+        "InputRichBlock".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockParagraph),
+        "InputRichBlockParagraph".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockSectionHeading),
+        "InputRichBlockSectionHeading".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockPreformatted),
+        "InputRichBlockPreformatted".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockFooter),
+        "InputRichBlockFooter".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockDivider),
+        "InputRichBlockDivider".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockMathematicalExpression),
+        "InputRichBlockMathematicalExpression".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockAnchor),
+        "InputRichBlockAnchor".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockList),
+        "InputRichBlockList".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockBlockQuotation),
+        "InputRichBlockBlockQuotation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockExpandableBlockQuotation),
+        "InputRichBlockExpandableBlockQuotation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockPullQuotation),
+        "InputRichBlockPullQuotation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockCollage),
+        "InputRichBlockCollage".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockSlideshow),
+        "InputRichBlockSlideshow".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockTable),
+        "InputRichBlockTable".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockDetails),
+        "InputRichBlockDetails".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockMap),
+        "InputRichBlockMap".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockButtons),
+        "InputRichBlockButtons".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockAnimation),
+        "InputRichBlockAnimation".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockAudio),
+        "InputRichBlockAudio".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockDocument),
+        "InputRichBlockDocument".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockPhoto),
+        "InputRichBlockPhoto".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockVideo),
+        "InputRichBlockVideo".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockVoiceNote),
+        "InputRichBlockVoiceNote".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
+        schema_for!(InputRichBlockThinking),
+        "InputRichBlockThinking".to_owned(),
         &mut errors,
         &exceptions,
     );
@@ -1534,6 +2424,13 @@ fn test_rust_objects() {
     );
     check_object(
         api_schema.clone(),
+        schema_for!(InputRichMessageContent),
+        "InputRichMessageContent".to_owned(),
+        &mut errors,
+        &exceptions,
+    );
+    check_object(
+        api_schema.clone(),
         schema_for!(InputMessageContentLocation),
         "InputLocationMessageContent".to_owned(),
         &mut errors,
@@ -1564,20 +2461,6 @@ fn test_rust_objects() {
         api_schema.clone(),
         schema_for!(ChosenInlineResult),
         "ChosenInlineResult".to_owned(),
-        &mut errors,
-        &exceptions,
-    );
-    check_object(
-        api_schema.clone(),
-        schema_for!(SentWebAppMessage),
-        "SentWebAppMessage".to_owned(),
-        &mut errors,
-        &exceptions,
-    );
-    check_object(
-        api_schema.clone(),
-        schema_for!(PreparedInlineMessage),
-        "PreparedInlineMessage".to_owned(),
         &mut errors,
         &exceptions,
     );

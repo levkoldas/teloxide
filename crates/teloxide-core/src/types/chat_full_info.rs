@@ -30,6 +30,28 @@ pub struct CustomEmojiId(pub String);
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct ChatFullInfo {
+    /// Optional. For private chats, the rating of the user if any
+    pub rating: Option<crate::types::UserRating>,
+
+    /// Optional. For private chats, the first audio added to the profile of the
+    /// user
+    pub first_profile_audio: Option<crate::types::Audio>,
+
+    /// Optional. The color scheme based on a unique gift that must be used for
+    /// the chat's name, message replies and link previews
+    pub unique_gift_colors: Option<crate::types::UniqueGiftColors>,
+
+    /// Optional. The number of Telegram Stars a general user has to pay to send
+    /// a message to the chat
+    pub paid_message_star_count: Option<u32>,
+
+    /// Optional. The bot that processes join request queries in the chat. The
+    /// field is only available to chat administrators.
+    pub guard_bot: Option<crate::types::User>,
+
+    /// Optional. The Community to which the chat belongs
+    pub community: Option<crate::types::Community>,
+
     /// A unique identifier for this chat.
     pub id: ChatId,
 
@@ -713,6 +735,39 @@ mod serde_helper {
     }
 }
 
+impl ChatFullInfo {
+    /// Sets `rating`.
+    pub fn rating(mut self, value: crate::types::UserRating) -> Self {
+        self.rating = Some(value);
+        self
+    }
+    /// Sets `first_profile_audio`.
+    pub fn first_profile_audio(mut self, value: crate::types::Audio) -> Self {
+        self.first_profile_audio = Some(value);
+        self
+    }
+    /// Sets `unique_gift_colors`.
+    pub fn unique_gift_colors(mut self, value: crate::types::UniqueGiftColors) -> Self {
+        self.unique_gift_colors = Some(value);
+        self
+    }
+    /// Sets `paid_message_star_count`.
+    pub fn paid_message_star_count(mut self, value: u32) -> Self {
+        self.paid_message_star_count = Some(value);
+        self
+    }
+    /// Sets `guard_bot`.
+    pub fn guard_bot(mut self, value: crate::types::User) -> Self {
+        self.guard_bot = Some(value);
+        self
+    }
+    /// Sets `community`.
+    pub fn community(mut self, value: crate::types::Community) -> Self {
+        self.community = Some(value);
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::{from_str, to_string};
@@ -722,6 +777,12 @@ mod tests {
     #[test]
     fn channel_de() {
         let expected = ChatFullInfo {
+            rating: None,
+            first_profile_audio: None,
+            unique_gift_colors: None,
+            paid_message_star_count: None,
+            guard_bot: None,
+            community: None,
             id: ChatId(-1),
             kind: ChatFullInfoKind::Public(Box::new(ChatFullInfoPublic {
                 title: None,
@@ -741,6 +802,7 @@ mod tests {
             has_hidden_members: false,
             has_aggressive_anti_spam_enabled: false,
             accepted_gift_types: AcceptedGiftTypes {
+                gifts_from_channels: false,
                 unlimited_gifts: true,
                 limited_gifts: true,
                 unique_gifts: true,
@@ -783,6 +845,12 @@ mod tests {
     #[test]
     fn private_chat_de() {
         let chat = ChatFullInfo {
+            rating: None,
+            first_profile_audio: None,
+            unique_gift_colors: None,
+            paid_message_star_count: None,
+            guard_bot: None,
+            community: None,
             id: ChatId(0),
             kind: ChatFullInfoKind::Private(Box::new(ChatFullInfoPrivate {
                 username: Some("username".into()),
@@ -803,6 +871,7 @@ mod tests {
             has_hidden_members: false,
             has_aggressive_anti_spam_enabled: false,
             accepted_gift_types: AcceptedGiftTypes {
+                gifts_from_channels: false,
                 unlimited_gifts: true,
                 limited_gifts: true,
                 unique_gifts: true,
@@ -843,6 +912,12 @@ mod tests {
     #[test]
     fn private_roundtrip() {
         let chat = ChatFullInfo {
+            rating: None,
+            first_profile_audio: None,
+            unique_gift_colors: None,
+            paid_message_star_count: None,
+            guard_bot: None,
+            community: None,
             id: ChatId(0),
             kind: ChatFullInfoKind::Private(Box::new(ChatFullInfoPrivate {
                 username: Some("username".into()),
@@ -863,6 +938,7 @@ mod tests {
             has_hidden_members: false,
             has_aggressive_anti_spam_enabled: false,
             accepted_gift_types: AcceptedGiftTypes {
+                gifts_from_channels: false,
                 unlimited_gifts: true,
                 limited_gifts: true,
                 unique_gifts: true,

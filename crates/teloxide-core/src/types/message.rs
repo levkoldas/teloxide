@@ -1,5 +1,6 @@
 #![allow(clippy::large_enum_variant)]
 
+use crate::types::{LivePhoto, RichMessage};
 use chrono::{DateTime, Utc};
 use derive_more::derive::From;
 use serde::{Deserialize, Serialize};
@@ -28,6 +29,31 @@ use crate::types::{
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct Message {
+    /// Optional. Tag or custom title of the sender of the message; for
+    /// supergroups only
+    pub sender_tag: Option<String>,
+    /// Optional. For ephemeral messages, the user who received the message
+    pub receiver_user: Option<User>,
+    /// Optional. For ephemeral messages, identifier of the ephemeral message
+    /// inside this chat. The identifier may be reused for another ephemeral
+    /// message after the message is deleted or expires.
+    pub ephemeral_message_id: Option<i64>,
+    /// Optional. The unique identifier for the guest query. Use this identifier
+    /// with the method answerGuestQuery to send a response message. If
+    /// non-empty, the message belongs to the chat where the guest bot was
+    /// summoned, which may not coincide with other existing bot chats sharing
+    /// the same identifier.
+    pub guest_query_id: Option<String>,
+    /// Optional. Persistent identifier of the specific poll option that is
+    /// being replied to
+    pub reply_to_poll_option_id: Option<String>,
+    /// Optional. For a message sent by a guest bot, this is the user whose
+    /// original message triggered the bot's response
+    pub guest_bot_caller_user: Option<User>,
+    /// Optional. For a message sent by a guest bot, this is the chat whose
+    /// original message triggered the bot's response
+    pub guest_bot_caller_chat: Option<Chat>,
+
     /// Unique message identifier inside this chat.
     #[serde(flatten)]
     pub id: MessageId,
@@ -80,7 +106,7 @@ pub struct Message {
     /// connected business account.
     pub sender_business_bot: Option<User>,
 
-    #[serde(flatten)]
+    #[serde(flatten, deserialize_with = "deserialize_message_kind")]
     pub kind: MessageKind,
 }
 
@@ -142,6 +168,15 @@ pub enum MessageKind {
     WebAppData(MessageWebAppData),
     /// An empty, content-less message, that can appear in callback queries
     /// attached to old messages.
+    ChatOwnerLeft(MessageChatOwnerLeft),
+    ChatOwnerChanged(MessageChatOwnerChanged),
+    GiftUpgradeSent(MessageGiftUpgradeSent),
+    CommunityChatAdded(MessageCommunityChatAdded),
+    CommunityChatJoined(MessageCommunityChatJoined),
+    CommunityChatRemoved(MessageCommunityChatRemoved),
+    ManagedBotCreated(MessageManagedBotCreated),
+    PollOptionAdded(MessagePollOptionAdded),
+    PollOptionDeleted(MessagePollOptionDeleted),
     Empty {},
 }
 
@@ -431,12 +466,15 @@ pub struct MessagePassportData {
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 #[serde(untagged)]
 pub enum MediaKind {
+    RichMessage(MediaRichMessage),
+    LivePhoto(MediaLivePhoto),
     // Note:
     // - `Venue` must be in front of `Location`
     // - `Animation` must be in front of `Document`
     //
-    // This is needed so serde doesn't parse `Venue` as `Location` or `Animation` as `Document`
-    // (for backward compatability telegram duplicates some fields)
+    // This is needed so serde doesn't parse `Venue` as `Location` or
+    // `Animation` as `Document` (for backward compatability telegram duplicates
+    // some fields)
     //
     // See <https://github.com/teloxide/teloxide/issues/481>
     Animation(MediaAnimation),
@@ -989,14 +1027,15 @@ mod getters {
     use crate::types::{
         self, message::MessageKind::*, Chat, ChatId, ChatMigration, EffectId, LinkPreviewOptions,
         MaybeInaccessibleMessage, MediaAnimation, MediaAudio, MediaChecklist, MediaContact,
-        MediaDocument, MediaGame, MediaKind, MediaLocation, MediaPaid, MediaPhoto, MediaPoll,
-        MediaSticker, MediaStory, MediaText, MediaVenue, MediaVideo, MediaVideoNote, MediaVoice,
-        Message, MessageChannelChatCreated, MessageChatShared, MessageChecklistTasksAdded,
-        MessageChecklistTasksDone, MessageCommon, MessageConnectedWebsite, MessageDeleteChatPhoto,
-        MessageDice, MessageDirectMessagePriceChanged, MessageEntity, MessageGroupChatCreated,
-        MessageId, MessageInvoice, MessageLeftChatMember, MessageNewChatMembers,
-        MessageNewChatPhoto, MessageNewChatTitle, MessageOrigin, MessagePassportData,
-        MessagePinned, MessageProximityAlertTriggered, MessageSuccessfulPayment,
+        MediaDocument, MediaGame, MediaKind, MediaLivePhoto, MediaLocation, MediaPaid, MediaPhoto,
+        MediaPoll, MediaSticker, MediaStory, MediaText, MediaVenue, MediaVideo, MediaVideoNote,
+        MediaVoice, Message, MessageChannelChatCreated, MessageChatShared,
+        MessageChecklistTasksAdded, MessageChecklistTasksDone, MessageCommon,
+        MessageConnectedWebsite, MessageDeleteChatPhoto, MessageDice,
+        MessageDirectMessagePriceChanged, MessageEntity, MessageGroupChatCreated, MessageId,
+        MessageInvoice, MessageLeftChatMember, MessageNewChatMembers, MessageNewChatPhoto,
+        MessageNewChatTitle, MessageOrigin, MessagePassportData, MessagePinned,
+        MessageProximityAlertTriggered, MessageSuccessfulPayment,
         MessageSuggestedPostApprovalFailed, MessageSuggestedPostApproved,
         MessageSuggestedPostDeclined, MessageSuggestedPostPaid, MessageSuggestedPostRefunded,
         MessageSupergroupChatCreated, MessageUsersShared, MessageVideoChatParticipantsInvited,
@@ -1156,6 +1195,10 @@ mod getters {
                     ..
                 })
                 | Common(MessageCommon {
+                    media_kind: MediaKind::LivePhoto(MediaLivePhoto { media_group_id, .. }),
+                    ..
+                })
+                | Common(MessageCommon {
                     media_kind: MediaKind::Document(MediaDocument { media_group_id, .. }),
                     ..
                 })
@@ -1244,6 +1287,10 @@ mod getters {
                     ..
                 })
                 | Common(MessageCommon {
+                    media_kind: MediaKind::LivePhoto(MediaLivePhoto { caption_entities, .. }),
+                    ..
+                })
+                | Common(MessageCommon {
                     media_kind: MediaKind::Video(MediaVideo { caption_entities, .. }),
                     ..
                 })
@@ -1266,6 +1313,7 @@ mod getters {
                 .map(|m| match m.media_kind {
                     MediaKind::Animation(MediaAnimation { show_caption_above_media, .. })
                     | MediaKind::Photo(MediaPhoto { show_caption_above_media, .. })
+                    | MediaKind::LivePhoto(MediaLivePhoto { show_caption_above_media, .. })
                     | MediaKind::Video(MediaVideo { show_caption_above_media, .. }) => {
                         show_caption_above_media
                     }
@@ -1283,7 +1331,8 @@ mod getters {
                     | MediaKind::Text(_)
                     | MediaKind::VideoNote(_)
                     | MediaKind::Voice(_)
-                    | MediaKind::Migration(_) => false,
+                    | MediaKind::Migration(_)
+                    | MediaKind::RichMessage(_) => false,
                 })
                 .unwrap_or(false)
         }
@@ -1300,6 +1349,7 @@ mod getters {
                 .map(|m| match m.media_kind {
                     MediaKind::Animation(MediaAnimation { has_media_spoiler, .. })
                     | MediaKind::Photo(MediaPhoto { has_media_spoiler, .. })
+                    | MediaKind::LivePhoto(MediaLivePhoto { has_media_spoiler, .. })
                     | MediaKind::Video(MediaVideo { has_media_spoiler, .. }) => has_media_spoiler,
                     MediaKind::Audio(_)
                     | MediaKind::Contact(_)
@@ -1315,7 +1365,8 @@ mod getters {
                     | MediaKind::Text(_)
                     | MediaKind::VideoNote(_)
                     | MediaKind::Voice(_)
-                    | MediaKind::Migration(_) => false,
+                    | MediaKind::Migration(_)
+                    | MediaKind::RichMessage(_) => false,
                 })
                 .unwrap_or(false)
         }
@@ -1450,6 +1501,7 @@ mod getters {
                         | MediaKind::Audio(MediaAudio { caption, .. })
                         | MediaKind::Document(MediaDocument { caption, .. })
                         | MediaKind::Photo(MediaPhoto { caption, .. })
+                        | MediaKind::LivePhoto(MediaLivePhoto { caption, .. })
                         | MediaKind::Video(MediaVideo { caption, .. })
                         | MediaKind::Voice(MediaVoice { caption, .. }),
                     ..
@@ -2104,15 +2156,16 @@ impl Message {
 
         // Note: `t.me` links use bare chat ids
         let chat_id = match chat_id.to_bare() {
-            // For private chats (i.e.: DMs) we can't produce "normal" t.me link.
+            // For private chats (i.e.: DMs) we can't produce "normal" t.me
+            // link.
             //
-            // There are "tg://openmessage?user_id={0}&message_id={1}" links, which are
-            // supposed to open any chat, including private messages, but they
-            // are only supported by some telegram clients (e.g. Plus Messenger,
-            // Telegram for Android 4.9+).
+            // There are "tg://openmessage?user_id={0}&message_id={1}" links,
+            // which are supposed to open any chat, including private messages,
+            // but they are only supported by some telegram clients (e.g. Plus
+            // Messenger, Telegram for Android 4.9+).
             User(_) => return None,
-            // Similarly to user chats, there is no way to create a link to a message in a normal,
-            // private group.
+            // Similarly to user chats, there is no way to create a link to a
+            // message in a normal, private group.
             //
             // (public groups are always supergroup which are in turn channels).
             Group(_) => return None,
@@ -2120,11 +2173,11 @@ impl Message {
         };
 
         let url = match chat_username {
-            // If it's public group (i.e. not DM, not private group), we can produce
-            // "normal" t.me link (accessible to everyone).
+            // If it's public group (i.e. not DM, not private group), we can
+            // produce "normal" t.me link (accessible to everyone).
             Some(username) => format!("https://t.me/{0}/{1}", username, message_id.0),
-            // For private supergroups and channels we produce "private" t.me/c links. These are
-            // only accessible to the group members.
+            // For private supergroups and channels we produce "private" t.me/c
+            // links. These are only accessible to the group members.
             None => format!("https://t.me/c/{0}/{1}", chat_id, message_id.0),
         };
 
@@ -2270,6 +2323,26 @@ impl Message {
         self.from
             .iter()
             .chain(self.via_bot.as_ref())
+            .chain(
+                self.rich_message()
+                    .into_iter()
+                    .flat_map(crate::types::RichMessage::mentioned_users),
+            )
+            .chain(
+                self.poll_option_added()
+                    .into_iter()
+                    .flat_map(crate::types::PollOptionAdded::mentioned_users),
+            )
+            .chain(
+                self.poll_option_deleted()
+                    .into_iter()
+                    .flat_map(crate::types::PollOptionDeleted::mentioned_users),
+            )
+            .chain(self.receiver_user.as_ref())
+            .chain(self.guest_bot_caller_user.as_ref())
+            .chain(self.managed_bot_created().map(|m| &m.bot))
+            .chain(self.chat_owner_changed().map(|m| &m.new_owner))
+            .chain(self.chat_owner_left().and_then(|m| m.new_owner.as_ref()))
             .chain(flatten(self.reply_to_message().map(Self::mentioned_users_rec)))
             .chain(flatten(self.new_chat_members()))
             .chain(self.left_chat_member())
@@ -2301,6 +2374,231 @@ impl From<&Message> for MessageId {
     fn from(message: &Message) -> MessageId {
         message.id
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessageChatOwnerLeft {
+    /// Optional. Service message: chat owner has left
+    pub chat_owner_left: crate::types::ChatOwnerLeft,
+}
+
+impl Message {
+    pub fn chat_owner_left(&self) -> Option<&crate::types::ChatOwnerLeft> {
+        match &self.kind {
+            MessageKind::ChatOwnerLeft(MessageChatOwnerLeft { chat_owner_left }) => {
+                Some(chat_owner_left)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessageChatOwnerChanged {
+    /// Optional. Service message: chat owner has changed
+    pub chat_owner_changed: crate::types::ChatOwnerChanged,
+}
+
+impl Message {
+    pub fn chat_owner_changed(&self) -> Option<&crate::types::ChatOwnerChanged> {
+        match &self.kind {
+            MessageKind::ChatOwnerChanged(MessageChatOwnerChanged { chat_owner_changed }) => {
+                Some(chat_owner_changed)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessageGiftUpgradeSent {
+    /// Optional. Service message: upgrade of a gift was purchased after the
+    /// gift was sent
+    pub gift_upgrade_sent: crate::types::GiftInfo,
+}
+
+impl Message {
+    pub fn gift_upgrade_sent(&self) -> Option<&crate::types::GiftInfo> {
+        match &self.kind {
+            MessageKind::GiftUpgradeSent(MessageGiftUpgradeSent { gift_upgrade_sent }) => {
+                Some(gift_upgrade_sent)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessageCommunityChatAdded {
+    /// Optional. Service message: chat or bot added to a Community
+    pub community_chat_added: crate::types::CommunityChatAdded,
+}
+
+impl Message {
+    pub fn community_chat_added(&self) -> Option<&crate::types::CommunityChatAdded> {
+        match &self.kind {
+            MessageKind::CommunityChatAdded(MessageCommunityChatAdded { community_chat_added }) => {
+                Some(community_chat_added)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessageCommunityChatJoined {
+    /// Optional. Service message: chat was joined by a user from a Community
+    pub community_chat_joined: crate::types::CommunityChatJoined,
+}
+
+impl Message {
+    pub fn community_chat_joined(&self) -> Option<&crate::types::CommunityChatJoined> {
+        match &self.kind {
+            MessageKind::CommunityChatJoined(MessageCommunityChatJoined {
+                community_chat_joined,
+            }) => Some(community_chat_joined),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessageCommunityChatRemoved {
+    /// Optional. Service message: chat or bot removed from a Community
+    pub community_chat_removed: crate::types::CommunityChatRemoved,
+}
+
+impl Message {
+    pub fn community_chat_removed(&self) -> Option<&crate::types::CommunityChatRemoved> {
+        match &self.kind {
+            MessageKind::CommunityChatRemoved(MessageCommunityChatRemoved {
+                community_chat_removed,
+            }) => Some(community_chat_removed),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessageManagedBotCreated {
+    /// Optional. Service message: user created a bot that will be managed by
+    /// the current bot
+    pub managed_bot_created: crate::types::ManagedBotCreated,
+}
+
+impl Message {
+    pub fn managed_bot_created(&self) -> Option<&crate::types::ManagedBotCreated> {
+        match &self.kind {
+            MessageKind::ManagedBotCreated(MessageManagedBotCreated { managed_bot_created }) => {
+                Some(managed_bot_created)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessagePollOptionAdded {
+    /// Optional. Service message: answer option was added to a poll
+    pub poll_option_added: crate::types::PollOptionAdded,
+}
+
+impl Message {
+    pub fn poll_option_added(&self) -> Option<&crate::types::PollOptionAdded> {
+        match &self.kind {
+            MessageKind::PollOptionAdded(MessagePollOptionAdded { poll_option_added }) => {
+                Some(poll_option_added)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MessagePollOptionDeleted {
+    /// Optional. Service message: answer option was deleted from a poll
+    pub poll_option_deleted: crate::types::PollOptionDeleted,
+}
+
+impl Message {
+    pub fn poll_option_deleted(&self) -> Option<&crate::types::PollOptionDeleted> {
+        match &self.kind {
+            MessageKind::PollOptionDeleted(MessagePollOptionDeleted { poll_option_deleted }) => {
+                Some(poll_option_deleted)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[serde_with::skip_serializing_none]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MediaLivePhoto {
+    /// Message is a live photo, available sizes of the live photo.
+    pub live_photo: LivePhoto,
+
+    /// Caption for the live photo, 0-1024 characters.
+    pub caption: Option<String>,
+
+    /// For messages with a caption, special entities like usernames, URLs,
+    /// bot commands, etc. that appear in the caption.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub caption_entities: Vec<MessageEntity>,
+
+    /// `true`, if the caption must be shown above the message media.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub show_caption_above_media: bool,
+
+    /// `true`, if the message media is covered by a spoiler animation.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub has_media_spoiler: bool,
+
+    /// The unique identifier of a media message group this message belongs
+    /// to.
+    pub media_group_id: Option<MediaGroupId>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
+pub struct MediaRichMessage {
+    pub rich_message: RichMessage,
+}
+impl Message {
+    pub fn rich_message(&self) -> Option<&RichMessage> {
+        match &self.kind {
+            MessageKind::Common(MessageCommon {
+                media_kind: MediaKind::RichMessage(media),
+                ..
+            }) => Some(&media.rich_message),
+            _ => None,
+        }
+    }
+    pub fn live_photo(&self) -> Option<&LivePhoto> {
+        match &self.kind {
+            MessageKind::Common(MessageCommon {
+                media_kind: MediaKind::LivePhoto(media), ..
+            }) => Some(&media.live_photo),
+            _ => None,
+        }
+    }
+}
+
+// Rich media and service payloads make the untagged message enum large. Grow
+// the stack at each nested message, including replies and giveaway messages.
+fn deserialize_message_kind<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<MessageKind, D::Error> {
+    stacker::maybe_grow(1024 * 1024, 2 * 1024 * 1024, || MessageKind::deserialize(deserializer))
 }
 
 #[cfg(test)]
@@ -2374,6 +2672,13 @@ mod tests {
         assert_eq!(
             message.unwrap(),
             Message {
+                sender_tag: None,
+                receiver_user: None,
+                ephemeral_message_id: None,
+                guest_query_id: None,
+                reply_to_poll_option_id: None,
+                guest_bot_caller_user: None,
+                guest_bot_caller_chat: None,
                 id: MessageId(198283),
                 thread_id: None,
                 direct_messages_topic: None,
@@ -2986,6 +3291,13 @@ mod tests {
                 winner_count: 0,
                 unclaimed_prize_count: Some(1),
                 giveaway_message: Some(Box::new(Message {
+                    sender_tag: None,
+                    receiver_user: None,
+                    ephemeral_message_id: None,
+                    guest_query_id: None,
+                    reply_to_poll_option_id: None,
+                    guest_bot_caller_user: None,
+                    guest_bot_caller_chat: None,
                     id: MessageId(24),
                     thread_id: None,
                     direct_messages_topic: None,
@@ -3376,6 +3688,7 @@ mod tests {
             "date": 1721162577,
             "unique_gift": {
                 "gift": {
+                    "gift_id": "gift",
                     "base_name": "name",
                     "name": "name",
                     "number": 123,

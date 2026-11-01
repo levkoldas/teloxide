@@ -33,6 +33,29 @@ pub struct GiftId(pub String);
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct Gift {
+    /// Optional. True, if the gift can only be purchased by Telegram Premium
+    /// subscribers
+    pub is_premium: Option<crate::types::True>,
+
+    /// Optional. True, if the gift can be used (after being upgraded) to
+    /// customize a user's appearance
+    pub has_colors: Option<crate::types::True>,
+
+    /// Optional. The total number of gifts of this type that can be sent by the
+    /// bot; for limited gifts only
+    pub personal_total_count: Option<u32>,
+
+    /// Optional. The number of remaining gifts of this type that can be sent by
+    /// the bot; for limited gifts only
+    pub personal_remaining_count: Option<u32>,
+
+    /// Optional. Background of the gift
+    pub background: Option<crate::types::GiftBackground>,
+
+    /// Optional. The total number of different unique gifts that can be
+    /// obtained by upgrading the gift
+    pub unique_gift_variant_count: Option<u32>,
+
     /// Unique identifier of the gift
     pub id: GiftId,
 
@@ -70,6 +93,39 @@ impl Gift {
             (Some(remaining_count), Some(total_count)) => Some((remaining_count, total_count)),
             _ => None,
         }
+    }
+}
+
+impl Gift {
+    /// Sets `is_premium`.
+    pub fn is_premium(mut self, value: crate::types::True) -> Self {
+        self.is_premium = Some(value);
+        self
+    }
+    /// Sets `has_colors`.
+    pub fn has_colors(mut self, value: crate::types::True) -> Self {
+        self.has_colors = Some(value);
+        self
+    }
+    /// Sets `personal_total_count`.
+    pub fn personal_total_count(mut self, value: u32) -> Self {
+        self.personal_total_count = Some(value);
+        self
+    }
+    /// Sets `personal_remaining_count`.
+    pub fn personal_remaining_count(mut self, value: u32) -> Self {
+        self.personal_remaining_count = Some(value);
+        self
+    }
+    /// Sets `background`.
+    pub fn background(mut self, value: crate::types::GiftBackground) -> Self {
+        self.background = Some(value);
+        self
+    }
+    /// Sets `unique_gift_variant_count`.
+    pub fn unique_gift_variant_count(mut self, value: u32) -> Self {
+        self.unique_gift_variant_count = Some(value);
+        self
     }
 }
 

@@ -5,6 +5,15 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub struct ChatAdministratorRights {
+    /// Optional. True, if the administrator can edit the tags of regular
+    /// members; for groups and supergroups only
+    pub can_manage_tags: Option<bool>,
+
+    /// True, if the administrator can manage chat welcome messages or directly
+    /// send them in the case of bots
+    #[serde(default)]
+    pub can_send_welcome_messages: bool,
+
     /// `true`, if the user's presence in the chat is hidden
     pub is_anonymous: bool,
 
@@ -64,4 +73,17 @@ pub struct ChatAdministratorRights {
     /// `true`, if the administrator can manage direct messages of the channel
     /// and decline suggested posts; for channels only
     pub can_manage_direct_messages: bool,
+}
+
+impl ChatAdministratorRights {
+    /// Sets `can_manage_tags`.
+    pub fn can_manage_tags(mut self, value: bool) -> Self {
+        self.can_manage_tags = Some(value);
+        self
+    }
+    /// Sets `can_send_welcome_messages`.
+    pub fn can_send_welcome_messages(mut self, value: bool) -> Self {
+        self.can_send_welcome_messages = value;
+        self
+    }
 }
